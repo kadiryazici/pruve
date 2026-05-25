@@ -1,0 +1,18 @@
+{
+  "name": "@pruve/reactivity",
+  "version": "0.0.1",
+  "description": "",
+  "main": "./src/lib.ts",
+  "types": "./src/lib.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.32.0",
+  "dependencies": {
+    "@vue/reactivity": "^3.5.34"
+  }
+}

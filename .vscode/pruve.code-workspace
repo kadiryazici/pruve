@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"js/ts.experimental.useTsgo": true,
+		"editor.formatOnSave": true,
+		"editor.codeActionsOnSave": {
+			"source.sortImports": "always",
+			"source.fixAll.ts": "always",
+		},
+		"js/ts.format.insertSpaceAfterCommaDelimiter": true,
+		"js/ts.format.semicolons": "remove",
+		"js/ts.preferences.quoteStyle": "double",
+		"js/ts.format.indentSwitchCase": true,
+		"js/ts.format.insertSpaceAfterTypeAssertion": true,
+		"js/ts.preferences.preferTypeOnlyAutoImports": true
+	}
+}
