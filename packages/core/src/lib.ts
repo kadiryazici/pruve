@@ -1,5 +1,6 @@
 export * from "./builtin.ts"
 export * from "./dom.ts"
+export { createVnodeProxy } from "./proxy.ts"
 export type {
   PropsWithChildren,
   PruveChildren,
@@ -9,5 +10,4 @@ export type {
   VirtualNode,
   VirtualNodeProxy
 } from "./types.ts"
-export { createVDomTree } from "./vdom.ts"
 

@@ -12,11 +12,26 @@ importers:
         specifier: 7.0.0-dev.20260523.1
         version: 7.0.0-dev.20260523.1
 
-  packages/core: {}
+  packages/core:
+    dependencies:
+      '@pruve/reactivity':
+        specifier: workspace:*
+        version: link:../reactivity
 
-  packages/playground: {}
+  packages/playground:
+    dependencies:
+      pruve:
+        specifier: workspace:*
+        version: link:../pruve
 
-  packages/pruve: {}
+  packages/pruve:
+    dependencies:
+      '@pruve/core':
+        specifier: workspace:*
+        version: link:../core
+      '@pruve/reactivity':
+        specifier: workspace:*
+        version: link:../reactivity
 
   packages/reactivity:
     dependencies:

@@ -21,7 +21,4 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
-  "include": [
-    "**/*.ts"
-  ]
 }

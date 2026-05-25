@@ -30,9 +30,11 @@ export type PruveChildren = PruveNode | PruveChildren[]
 
 export interface PruveComponent<Props = {}> {
   (): VirtualNodeBuilderProxy<Props, never>
+  <P>(): VirtualNodeBuilderProxy<P, never>
 }
 
 export interface ComponentSetup<Props = {}> {
+  (props: Props): () => PruveNode
   (props: Props): () => PruveNode
 }
 

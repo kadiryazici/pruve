@@ -2,9 +2,15 @@
   "name": "pruve",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "./src/lib.ts",
+  "types": "./src/lib.ts",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@pruve/reactivity": "workspace:*",
+    "@pruve/core": "workspace:*"
   },
   "keywords": [],
   "author": "",

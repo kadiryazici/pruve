@@ -1,132 +1,132 @@
+import { type WritableSignal } from "@pruve/reactivity"
 import type * as PruveDOM from "./dom.ts"
-import { createVnodeProxy } from "./lib.ts";
-import type { WritableSignal } from "./reactivity.ts";
-import type { ComponentSetup, PropsWithChildren, PruveComponent } from "./types.ts";
+import { createVnodeProxy } from "./proxy.ts"
+import type { ComponentSetup, PropsWithChildren, PruveComponent } from "./types.ts"
 
 export type PropsWithRef<RefType, Props> = Props & {
   ref?: ((instance: RefType | null) => void) | WritableSignal<RefType | null> | null
 }
 
 export interface IntrinsicHTMLElements {
-  a: PropsWithChildren<PropsWithRef<HTMLAnchorElement, PruveDOM.AccessibleAnchorHTMLAttributes<HTMLAnchorElement>>>;
-  abbr: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  address: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  area: PropsWithChildren<PropsWithRef<HTMLAreaElement, PruveDOM.AccessibleAreaHTMLAttributes<HTMLAreaElement>>>;
-  article: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.ArticleHTMLAttributes<HTMLElement>>>;
-  aside: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.AsideHTMLAttributes<HTMLElement>>>;
-  audio: PropsWithChildren<PropsWithRef<HTMLAudioElement, PruveDOM.AudioHTMLAttributes<HTMLAudioElement>>>;
-  b: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  base: PropsWithChildren<PropsWithRef<HTMLBaseElement, PruveDOM.BaseHTMLAttributes<HTMLBaseElement>>>;
-  bdi: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  bdo: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  big: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  blockquote: PropsWithChildren<PropsWithRef<HTMLQuoteElement, PruveDOM.BlockquoteHTMLAttributes<HTMLQuoteElement>>>;
-  body: PropsWithChildren<PropsWithRef<HTMLBodyElement, PruveDOM.HTMLAttributes<HTMLBodyElement>>>;
-  br: PropsWithChildren<PropsWithRef<HTMLBRElement, PruveDOM.BrHTMLAttributes<HTMLBRElement>>>;
-  button: PropsWithChildren<PropsWithRef<HTMLButtonElement, PruveDOM.ButtonHTMLAttributes<HTMLButtonElement>>>;
-  canvas: PropsWithChildren<PropsWithRef<HTMLCanvasElement, PruveDOM.CanvasHTMLAttributes<HTMLCanvasElement>>>;
-  caption: PropsWithChildren<PropsWithRef<HTMLTableCaptionElement, PruveDOM.CaptionHTMLAttributes<HTMLTableCaptionElement>>>;
-  cite: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  code: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  col: PropsWithChildren<PropsWithRef<HTMLTableColElement, PruveDOM.ColHTMLAttributes<HTMLTableColElement>>>;
-  colgroup: PropsWithChildren<PropsWithRef<HTMLTableColElement, PruveDOM.ColgroupHTMLAttributes<HTMLTableColElement>>>;
-  data: PropsWithChildren<PropsWithRef<HTMLDataElement, PruveDOM.DataHTMLAttributes<HTMLDataElement>>>;
-  datalist: PropsWithChildren<PropsWithRef<HTMLDataListElement, PruveDOM.DataListHTMLAttributes<HTMLDataListElement>>>;
-  dd: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.DdHTMLAttributes<HTMLElement>>>;
-  del: PropsWithChildren<PropsWithRef<HTMLModElement, PruveDOM.DelHTMLAttributes<HTMLModElement>>>;
-  details: PropsWithChildren<PropsWithRef<HTMLDetailsElement, PruveDOM.DetailsHTMLAttributes<HTMLDetailsElement>>>;
-  dfn: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  dialog: PropsWithChildren<PropsWithRef<HTMLDialogElement, PruveDOM.DialogHTMLAttributes<HTMLDialogElement>>>;
-  div: PropsWithChildren<PropsWithRef<HTMLDivElement, PruveDOM.HTMLAttributes<HTMLDivElement>>>;
-  dl: PropsWithChildren<PropsWithRef<HTMLDListElement, PruveDOM.DlHTMLAttributes<HTMLDListElement>>>;
-  dt: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.DtHTMLAttributes<HTMLElement>>>;
-  em: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  embed: PropsWithChildren<PropsWithRef<HTMLEmbedElement, PruveDOM.EmbedHTMLAttributes<HTMLEmbedElement>>>;
-  fieldset: PropsWithChildren<PropsWithRef<HTMLFieldSetElement, PruveDOM.FieldsetHTMLAttributes<HTMLFieldSetElement>>>;
-  figcaption: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.FigcaptionHTMLAttributes<HTMLElement>>>;
-  figure: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  footer: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.FooterHTMLAttributes<HTMLElement>>>;
-  form: PropsWithChildren<PropsWithRef<HTMLFormElement, PruveDOM.FormHTMLAttributes<HTMLFormElement>>>;
-  h1: PropsWithChildren<PropsWithRef<HTMLHeadingElement, PruveDOM.HeadingHTMLAttributes<HTMLHeadingElement>>>;
-  h2: PropsWithChildren<PropsWithRef<HTMLHeadingElement, PruveDOM.HeadingHTMLAttributes<HTMLHeadingElement>>>;
-  h3: PropsWithChildren<PropsWithRef<HTMLHeadingElement, PruveDOM.HeadingHTMLAttributes<HTMLHeadingElement>>>;
-  h4: PropsWithChildren<PropsWithRef<HTMLHeadingElement, PruveDOM.HeadingHTMLAttributes<HTMLHeadingElement>>>;
-  h5: PropsWithChildren<PropsWithRef<HTMLHeadingElement, PruveDOM.HeadingHTMLAttributes<HTMLHeadingElement>>>;
-  h6: PropsWithChildren<PropsWithRef<HTMLHeadingElement, PruveDOM.HeadingHTMLAttributes<HTMLHeadingElement>>>;
-  head: PropsWithChildren<PropsWithRef<HTMLHeadElement, PruveDOM.HeadHTMLAttributes<HTMLHeadElement>>>;
-  header: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HeaderHTMLAttributes<HTMLElement>>>;
-  hgroup: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  hr: PropsWithChildren<PropsWithRef<HTMLHRElement, PruveDOM.HrHTMLAttributes<HTMLHRElement>>>;
-  html: PropsWithChildren<PropsWithRef<HTMLHtmlElement, PruveDOM.HtmlHTMLAttributes<HTMLHtmlElement>>>;
-  i: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  iframe: PropsWithChildren<PropsWithRef<HTMLIFrameElement, PruveDOM.IframeHTMLAttributes<HTMLIFrameElement>>>;
-  img: PropsWithChildren<PropsWithRef<HTMLImageElement, PruveDOM.AccessibleImgHTMLAttributes<HTMLImageElement>>>;
-  input: PropsWithChildren<PropsWithRef<HTMLInputElement, PruveDOM.AccessibleInputHTMLAttributes<HTMLInputElement>>>;
-  ins: PropsWithChildren<PropsWithRef<HTMLModElement, PruveDOM.InsHTMLAttributes<HTMLModElement>>>;
-  kbd: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  keygen: PropsWithChildren<PropsWithRef<HTMLUnknownElement, PruveDOM.KeygenHTMLAttributes<HTMLUnknownElement>>>;
-  label: PropsWithChildren<PropsWithRef<HTMLLabelElement, PruveDOM.LabelHTMLAttributes<HTMLLabelElement>>>;
-  legend: PropsWithChildren<PropsWithRef<HTMLLegendElement, PruveDOM.LegendHTMLAttributes<HTMLLegendElement>>>;
-  li: PropsWithChildren<PropsWithRef<HTMLLIElement, PruveDOM.LiHTMLAttributes<HTMLLIElement>>>;
-  link: PropsWithChildren<PropsWithRef<HTMLLinkElement, PruveDOM.LinkHTMLAttributes<HTMLLinkElement>>>;
-  main: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.MainHTMLAttributes<HTMLElement>>>;
-  map: PropsWithChildren<PropsWithRef<HTMLMapElement, PruveDOM.MapHTMLAttributes<HTMLMapElement>>>;
-  mark: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  marquee: PropsWithChildren<PropsWithRef<HTMLMarqueeElement, PruveDOM.MarqueeHTMLAttributes<HTMLMarqueeElement>>>;
-  menu: PropsWithChildren<PropsWithRef<HTMLMenuElement, PruveDOM.MenuHTMLAttributes<HTMLMenuElement>>>;
-  menuitem: PropsWithChildren<PropsWithRef<HTMLUnknownElement, PruveDOM.HTMLAttributes<HTMLUnknownElement>>>;
-  meta: PropsWithChildren<PropsWithRef<HTMLMetaElement, PruveDOM.MetaHTMLAttributes<HTMLMetaElement>>>;
-  meter: PropsWithChildren<PropsWithRef<HTMLMeterElement, PruveDOM.MeterHTMLAttributes<HTMLMeterElement>>>;
-  nav: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.NavHTMLAttributes<HTMLElement>>>;
-  noscript: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.NoScriptHTMLAttributes<HTMLElement>>>;
-  object: PropsWithChildren<PropsWithRef<HTMLObjectElement, PruveDOM.ObjectHTMLAttributes<HTMLObjectElement>>>;
-  ol: PropsWithChildren<PropsWithRef<HTMLOListElement, PruveDOM.OlHTMLAttributes<HTMLOListElement>>>;
-  optgroup: PropsWithChildren<PropsWithRef<HTMLOptGroupElement, PruveDOM.OptgroupHTMLAttributes<HTMLOptGroupElement>>>;
-  option: PropsWithChildren<PropsWithRef<HTMLOptionElement, PruveDOM.OptionHTMLAttributes<HTMLOptionElement>>>;
-  output: PropsWithChildren<PropsWithRef<HTMLOutputElement, PruveDOM.OutputHTMLAttributes<HTMLOutputElement>>>;
-  p: PropsWithChildren<PropsWithRef<HTMLParagraphElement, PruveDOM.HTMLAttributes<HTMLParagraphElement>>>;
-  param: PropsWithChildren<PropsWithRef<HTMLParamElement, PruveDOM.ParamHTMLAttributes<HTMLParamElement>>>;
-  picture: PropsWithChildren<PropsWithRef<HTMLPictureElement, PruveDOM.PictureHTMLAttributes<HTMLPictureElement>>>;
-  pre: PropsWithChildren<PropsWithRef<HTMLPreElement, PruveDOM.HTMLAttributes<HTMLPreElement>>>;
-  progress: PropsWithChildren<PropsWithRef<HTMLProgressElement, PruveDOM.ProgressHTMLAttributes<HTMLProgressElement>>>;
-  q: PropsWithChildren<PropsWithRef<HTMLQuoteElement, PruveDOM.QuoteHTMLAttributes<HTMLQuoteElement>>>;
-  rp: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  rt: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  ruby: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  s: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  samp: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  script: PropsWithChildren<PropsWithRef<HTMLScriptElement, PruveDOM.ScriptHTMLAttributes<HTMLScriptElement>>>;
-  search: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.SearchHTMLAttributes<HTMLElement>>>;
-  section: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  select: PropsWithChildren<PropsWithRef<HTMLSelectElement, PruveDOM.AccessibleSelectHTMLAttributes<HTMLSelectElement>>>;
-  slot: PropsWithChildren<PropsWithRef<HTMLSlotElement, PruveDOM.SlotHTMLAttributes<HTMLSlotElement>>>;
-  small: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  source: PropsWithChildren<PropsWithRef<HTMLSourceElement, PruveDOM.SourceHTMLAttributes<HTMLSourceElement>>>;
-  span: PropsWithChildren<PropsWithRef<HTMLSpanElement, PruveDOM.HTMLAttributes<HTMLSpanElement>>>;
-  strong: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  style: PropsWithChildren<PropsWithRef<HTMLStyleElement, PruveDOM.StyleHTMLAttributes<HTMLStyleElement>>>;
-  sub: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  summary: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  sup: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>;
-  table: PropsWithChildren<PropsWithRef<HTMLTableElement, PruveDOM.TableHTMLAttributes<HTMLTableElement>>>;
-  tbody: PropsWithChildren<PropsWithRef<HTMLTableSectionElement, PruveDOM.HTMLAttributes<HTMLTableSectionElement>>>;
-  td: PropsWithChildren<PropsWithRef<HTMLTableCellElement, PruveDOM.TdHTMLAttributes<HTMLTableCellElement>>>;
-  template: PropsWithChildren<PropsWithRef<HTMLTemplateElement, PruveDOM.TemplateHTMLAttributes<HTMLTemplateElement>>>;
-  textarea: PropsWithChildren<PropsWithRef<HTMLTextAreaElement, PruveDOM.TextareaHTMLAttributes<HTMLTextAreaElement>>>;
-  tfoot: PropsWithChildren<PropsWithRef<HTMLTableSectionElement, PruveDOM.HTMLAttributes<HTMLTableSectionElement>>>;
-  th: PropsWithChildren<PropsWithRef<HTMLTableCellElement, PruveDOM.ThHTMLAttributes<HTMLTableCellElement>>>;
-  thead: PropsWithChildren<PropsWithRef<HTMLTableSectionElement, PruveDOM.HTMLAttributes<HTMLTableSectionElement>>>;
-  time: PropsWithChildren<PropsWithRef<HTMLTimeElement, PruveDOM.TimeHTMLAttributes<HTMLTimeElement>>>;
-  title: PropsWithChildren<PropsWithRef<HTMLTitleElement, PruveDOM.TitleHTMLAttributes<HTMLTitleElement>>>;
-  tr: PropsWithChildren<PropsWithRef<HTMLTableRowElement, PruveDOM.HTMLAttributes<HTMLTableRowElement>>>;
-  track: PropsWithChildren<PropsWithRef<HTMLTrackElement, PruveDOM.TrackHTMLAttributes<HTMLTrackElement>>>;
-  u: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.UlHTMLAttributes<HTMLElement>>>;
-  ul: PropsWithChildren<PropsWithRef<HTMLUListElement, PruveDOM.HTMLAttributes<HTMLUListElement>>>;
-  video: PropsWithChildren<PropsWithRef<HTMLVideoElement, PruveDOM.VideoHTMLAttributes<HTMLVideoElement>>>;
-  wbr: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.WbrHTMLAttributes<HTMLElement>>>;
+  a: PropsWithChildren<PropsWithRef<HTMLAnchorElement, PruveDOM.AccessibleAnchorHTMLAttributes<HTMLAnchorElement>>>
+  abbr: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  address: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  area: PropsWithChildren<PropsWithRef<HTMLAreaElement, PruveDOM.AccessibleAreaHTMLAttributes<HTMLAreaElement>>>
+  article: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.ArticleHTMLAttributes<HTMLElement>>>
+  aside: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.AsideHTMLAttributes<HTMLElement>>>
+  audio: PropsWithChildren<PropsWithRef<HTMLAudioElement, PruveDOM.AudioHTMLAttributes<HTMLAudioElement>>>
+  b: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  base: PropsWithChildren<PropsWithRef<HTMLBaseElement, PruveDOM.BaseHTMLAttributes<HTMLBaseElement>>>
+  bdi: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  bdo: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  big: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  blockquote: PropsWithChildren<PropsWithRef<HTMLQuoteElement, PruveDOM.BlockquoteHTMLAttributes<HTMLQuoteElement>>>
+  body: PropsWithChildren<PropsWithRef<HTMLBodyElement, PruveDOM.HTMLAttributes<HTMLBodyElement>>>
+  br: PropsWithChildren<PropsWithRef<HTMLBRElement, PruveDOM.BrHTMLAttributes<HTMLBRElement>>>
+  button: PropsWithChildren<PropsWithRef<HTMLButtonElement, PruveDOM.ButtonHTMLAttributes<HTMLButtonElement>>>
+  canvas: PropsWithChildren<PropsWithRef<HTMLCanvasElement, PruveDOM.CanvasHTMLAttributes<HTMLCanvasElement>>>
+  caption: PropsWithChildren<PropsWithRef<HTMLTableCaptionElement, PruveDOM.CaptionHTMLAttributes<HTMLTableCaptionElement>>>
+  cite: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  code: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  col: PropsWithChildren<PropsWithRef<HTMLTableColElement, PruveDOM.ColHTMLAttributes<HTMLTableColElement>>>
+  colgroup: PropsWithChildren<PropsWithRef<HTMLTableColElement, PruveDOM.ColgroupHTMLAttributes<HTMLTableColElement>>>
+  data: PropsWithChildren<PropsWithRef<HTMLDataElement, PruveDOM.DataHTMLAttributes<HTMLDataElement>>>
+  datalist: PropsWithChildren<PropsWithRef<HTMLDataListElement, PruveDOM.DataListHTMLAttributes<HTMLDataListElement>>>
+  dd: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.DdHTMLAttributes<HTMLElement>>>
+  del: PropsWithChildren<PropsWithRef<HTMLModElement, PruveDOM.DelHTMLAttributes<HTMLModElement>>>
+  details: PropsWithChildren<PropsWithRef<HTMLDetailsElement, PruveDOM.DetailsHTMLAttributes<HTMLDetailsElement>>>
+  dfn: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  dialog: PropsWithChildren<PropsWithRef<HTMLDialogElement, PruveDOM.DialogHTMLAttributes<HTMLDialogElement>>>
+  div: PropsWithChildren<PropsWithRef<HTMLDivElement, PruveDOM.HTMLAttributes<HTMLDivElement>>>
+  dl: PropsWithChildren<PropsWithRef<HTMLDListElement, PruveDOM.DlHTMLAttributes<HTMLDListElement>>>
+  dt: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.DtHTMLAttributes<HTMLElement>>>
+  em: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  embed: PropsWithChildren<PropsWithRef<HTMLEmbedElement, PruveDOM.EmbedHTMLAttributes<HTMLEmbedElement>>>
+  fieldset: PropsWithChildren<PropsWithRef<HTMLFieldSetElement, PruveDOM.FieldsetHTMLAttributes<HTMLFieldSetElement>>>
+  figcaption: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.FigcaptionHTMLAttributes<HTMLElement>>>
+  figure: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  footer: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.FooterHTMLAttributes<HTMLElement>>>
+  form: PropsWithChildren<PropsWithRef<HTMLFormElement, PruveDOM.FormHTMLAttributes<HTMLFormElement>>>
+  h1: PropsWithChildren<PropsWithRef<HTMLHeadingElement, PruveDOM.HeadingHTMLAttributes<HTMLHeadingElement>>>
+  h2: PropsWithChildren<PropsWithRef<HTMLHeadingElement, PruveDOM.HeadingHTMLAttributes<HTMLHeadingElement>>>
+  h3: PropsWithChildren<PropsWithRef<HTMLHeadingElement, PruveDOM.HeadingHTMLAttributes<HTMLHeadingElement>>>
+  h4: PropsWithChildren<PropsWithRef<HTMLHeadingElement, PruveDOM.HeadingHTMLAttributes<HTMLHeadingElement>>>
+  h5: PropsWithChildren<PropsWithRef<HTMLHeadingElement, PruveDOM.HeadingHTMLAttributes<HTMLHeadingElement>>>
+  h6: PropsWithChildren<PropsWithRef<HTMLHeadingElement, PruveDOM.HeadingHTMLAttributes<HTMLHeadingElement>>>
+  head: PropsWithChildren<PropsWithRef<HTMLHeadElement, PruveDOM.HeadHTMLAttributes<HTMLHeadElement>>>
+  header: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HeaderHTMLAttributes<HTMLElement>>>
+  hgroup: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  hr: PropsWithChildren<PropsWithRef<HTMLHRElement, PruveDOM.HrHTMLAttributes<HTMLHRElement>>>
+  html: PropsWithChildren<PropsWithRef<HTMLHtmlElement, PruveDOM.HtmlHTMLAttributes<HTMLHtmlElement>>>
+  i: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  iframe: PropsWithChildren<PropsWithRef<HTMLIFrameElement, PruveDOM.IframeHTMLAttributes<HTMLIFrameElement>>>
+  img: PropsWithChildren<PropsWithRef<HTMLImageElement, PruveDOM.AccessibleImgHTMLAttributes<HTMLImageElement>>>
+  input: PropsWithChildren<PropsWithRef<HTMLInputElement, PruveDOM.AccessibleInputHTMLAttributes<HTMLInputElement>>>
+  ins: PropsWithChildren<PropsWithRef<HTMLModElement, PruveDOM.InsHTMLAttributes<HTMLModElement>>>
+  kbd: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  keygen: PropsWithChildren<PropsWithRef<HTMLUnknownElement, PruveDOM.KeygenHTMLAttributes<HTMLUnknownElement>>>
+  label: PropsWithChildren<PropsWithRef<HTMLLabelElement, PruveDOM.LabelHTMLAttributes<HTMLLabelElement>>>
+  legend: PropsWithChildren<PropsWithRef<HTMLLegendElement, PruveDOM.LegendHTMLAttributes<HTMLLegendElement>>>
+  li: PropsWithChildren<PropsWithRef<HTMLLIElement, PruveDOM.LiHTMLAttributes<HTMLLIElement>>>
+  link: PropsWithChildren<PropsWithRef<HTMLLinkElement, PruveDOM.LinkHTMLAttributes<HTMLLinkElement>>>
+  main: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.MainHTMLAttributes<HTMLElement>>>
+  map: PropsWithChildren<PropsWithRef<HTMLMapElement, PruveDOM.MapHTMLAttributes<HTMLMapElement>>>
+  mark: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  marquee: PropsWithChildren<PropsWithRef<HTMLMarqueeElement, PruveDOM.MarqueeHTMLAttributes<HTMLMarqueeElement>>>
+  menu: PropsWithChildren<PropsWithRef<HTMLMenuElement, PruveDOM.MenuHTMLAttributes<HTMLMenuElement>>>
+  menuitem: PropsWithChildren<PropsWithRef<HTMLUnknownElement, PruveDOM.HTMLAttributes<HTMLUnknownElement>>>
+  meta: PropsWithChildren<PropsWithRef<HTMLMetaElement, PruveDOM.MetaHTMLAttributes<HTMLMetaElement>>>
+  meter: PropsWithChildren<PropsWithRef<HTMLMeterElement, PruveDOM.MeterHTMLAttributes<HTMLMeterElement>>>
+  nav: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.NavHTMLAttributes<HTMLElement>>>
+  noscript: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.NoScriptHTMLAttributes<HTMLElement>>>
+  object: PropsWithChildren<PropsWithRef<HTMLObjectElement, PruveDOM.ObjectHTMLAttributes<HTMLObjectElement>>>
+  ol: PropsWithChildren<PropsWithRef<HTMLOListElement, PruveDOM.OlHTMLAttributes<HTMLOListElement>>>
+  optgroup: PropsWithChildren<PropsWithRef<HTMLOptGroupElement, PruveDOM.OptgroupHTMLAttributes<HTMLOptGroupElement>>>
+  option: PropsWithChildren<PropsWithRef<HTMLOptionElement, PruveDOM.OptionHTMLAttributes<HTMLOptionElement>>>
+  output: PropsWithChildren<PropsWithRef<HTMLOutputElement, PruveDOM.OutputHTMLAttributes<HTMLOutputElement>>>
+  p: PropsWithChildren<PropsWithRef<HTMLParagraphElement, PruveDOM.HTMLAttributes<HTMLParagraphElement>>>
+  param: PropsWithChildren<PropsWithRef<HTMLParamElement, PruveDOM.ParamHTMLAttributes<HTMLParamElement>>>
+  picture: PropsWithChildren<PropsWithRef<HTMLPictureElement, PruveDOM.PictureHTMLAttributes<HTMLPictureElement>>>
+  pre: PropsWithChildren<PropsWithRef<HTMLPreElement, PruveDOM.HTMLAttributes<HTMLPreElement>>>
+  progress: PropsWithChildren<PropsWithRef<HTMLProgressElement, PruveDOM.ProgressHTMLAttributes<HTMLProgressElement>>>
+  q: PropsWithChildren<PropsWithRef<HTMLQuoteElement, PruveDOM.QuoteHTMLAttributes<HTMLQuoteElement>>>
+  rp: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  rt: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  ruby: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  s: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  samp: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  script: PropsWithChildren<PropsWithRef<HTMLScriptElement, PruveDOM.ScriptHTMLAttributes<HTMLScriptElement>>>
+  search: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.SearchHTMLAttributes<HTMLElement>>>
+  section: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  select: PropsWithChildren<PropsWithRef<HTMLSelectElement, PruveDOM.AccessibleSelectHTMLAttributes<HTMLSelectElement>>>
+  slot: PropsWithChildren<PropsWithRef<HTMLSlotElement, PruveDOM.SlotHTMLAttributes<HTMLSlotElement>>>
+  small: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  source: PropsWithChildren<PropsWithRef<HTMLSourceElement, PruveDOM.SourceHTMLAttributes<HTMLSourceElement>>>
+  span: PropsWithChildren<PropsWithRef<HTMLSpanElement, PruveDOM.HTMLAttributes<HTMLSpanElement>>>
+  strong: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  style: PropsWithChildren<PropsWithRef<HTMLStyleElement, PruveDOM.StyleHTMLAttributes<HTMLStyleElement>>>
+  sub: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  summary: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  sup: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.HTMLAttributes<HTMLElement>>>
+  table: PropsWithChildren<PropsWithRef<HTMLTableElement, PruveDOM.TableHTMLAttributes<HTMLTableElement>>>
+  tbody: PropsWithChildren<PropsWithRef<HTMLTableSectionElement, PruveDOM.HTMLAttributes<HTMLTableSectionElement>>>
+  td: PropsWithChildren<PropsWithRef<HTMLTableCellElement, PruveDOM.TdHTMLAttributes<HTMLTableCellElement>>>
+  template: PropsWithChildren<PropsWithRef<HTMLTemplateElement, PruveDOM.TemplateHTMLAttributes<HTMLTemplateElement>>>
+  textarea: PropsWithChildren<PropsWithRef<HTMLTextAreaElement, PruveDOM.TextareaHTMLAttributes<HTMLTextAreaElement>>>
+  tfoot: PropsWithChildren<PropsWithRef<HTMLTableSectionElement, PruveDOM.HTMLAttributes<HTMLTableSectionElement>>>
+  th: PropsWithChildren<PropsWithRef<HTMLTableCellElement, PruveDOM.ThHTMLAttributes<HTMLTableCellElement>>>
+  thead: PropsWithChildren<PropsWithRef<HTMLTableSectionElement, PruveDOM.HTMLAttributes<HTMLTableSectionElement>>>
+  time: PropsWithChildren<PropsWithRef<HTMLTimeElement, PruveDOM.TimeHTMLAttributes<HTMLTimeElement>>>
+  title: PropsWithChildren<PropsWithRef<HTMLTitleElement, PruveDOM.TitleHTMLAttributes<HTMLTitleElement>>>
+  tr: PropsWithChildren<PropsWithRef<HTMLTableRowElement, PruveDOM.HTMLAttributes<HTMLTableRowElement>>>
+  track: PropsWithChildren<PropsWithRef<HTMLTrackElement, PruveDOM.TrackHTMLAttributes<HTMLTrackElement>>>
+  u: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.UlHTMLAttributes<HTMLElement>>>
+  ul: PropsWithChildren<PropsWithRef<HTMLUListElement, PruveDOM.HTMLAttributes<HTMLUListElement>>>
+  video: PropsWithChildren<PropsWithRef<HTMLVideoElement, PruveDOM.VideoHTMLAttributes<HTMLVideoElement>>>
+  wbr: PropsWithChildren<PropsWithRef<HTMLElement, PruveDOM.WbrHTMLAttributes<HTMLElement>>>
 }
 
-export type ComponentProps<T> = T extends PruveComponent<infer Props>
+export type ComponentProps<T extends keyof IntrinsicHTMLElements | PruveComponent<unknown>> = T extends PruveComponent<infer Props>
   ? Props
   : T extends keyof IntrinsicHTMLElements
   ? IntrinsicHTMLElements[T]
@@ -254,7 +254,7 @@ export function Tag<Props = ComponentProps<"div">>(tagName: string) {
 }
 
 export function component<Props = {}>(setup: ComponentSetup<Props>) {
-  return (() => createVnodeProxy<Props>(setup)) as PruveComponent<Props>;
+  return (() => createVnodeProxy<Props>(setup)) as PruveComponent<Props>
 }
 
 export const Fragment = () => createVnodeProxy<PropsWithChildren>("@@fragment")
