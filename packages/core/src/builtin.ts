@@ -1,40 +1,28 @@
-import { type WritableSignal } from "@pruve/reactivity"
-import type { ComponentType, JSX, Signalish } from "preact"
+import type { ComponentType } from "preact"
 import { Fragment as PreactFragment } from "preact"
 import { createVnodeProxy } from "./proxy.ts"
-import type { PruveChildren, PruveComponent, VirtualNodeBuilderProxy } from "./types.ts"
-
-export type PropsWithRef<RefType, Props> = Props & {
-  ref?: ((instance: RefType | null) => void) | WritableSignal<RefType | null> | null
-}
-
-type Unsignalish<T> = T extends Signalish<infer U> ? U : T
-interface ElementProps<T> {
-  children?: PruveChildren
-  ref?: ((instance: T | null) => void) | WritableSignal<T | null> | null
-}
-
-type FixPreactProps<T> = ElementProps<T> & {
-  [K in keyof T]: Unsignalish<T[K]>
-}
+import type { JSXInternal as JSX } from "./types/attrs.ts"
+import type { CompletedVirtualNodeProxy, PropsWithChildren, PruveComponent, VirtualNodeBuilderProxy } from "./types.ts"
 
 export type ComponentProps<
   T extends keyof JSX.IntrinsicElements
   | PruveComponent<unknown>
   | ComponentType<unknown>
 > = T extends PruveComponent<infer Props>
-  ? FixPreactProps<Props>
+  ? PropsWithChildren<Props>
   : T extends keyof JSX.IntrinsicElements
-  ? FixPreactProps<JSX.IntrinsicElements[T]>
+  ? JSX.IntrinsicElements[T]
   : T extends ComponentType<infer Props>
-  ? FixPreactProps<Props>
+  ? PropsWithChildren<Props>
   : never
 
-export function Tag<Props = ComponentProps<"div">>(tagName: string) {
+export function Tag(tagName: string): CompletedVirtualNodeProxy<ComponentProps<"div">>
+export function Tag<Props>(tagName: string): VirtualNodeBuilderProxy<Props, never>
+export function Tag<Props = ComponentProps<"div">>(tagName: string): any {
   return createVnodeProxy<Props>(tagName)
 }
 
-export const Fragment = () => createVnodeProxy(PreactFragment as any) as VirtualNodeBuilderProxy<ComponentProps<typeof PreactFragment>, never>
+export const Fragment = () => createVnodeProxy(PreactFragment as any) as CompletedVirtualNodeProxy<ComponentProps<typeof PreactFragment>>
 
 
 const _ = new Proxy({} as any, {
@@ -42,7 +30,7 @@ const _ = new Proxy({} as any, {
     return () => createVnodeProxy(prop.toString())
   }
 }) as {
-    [Key in keyof JSX.IntrinsicElements]: () => VirtualNodeBuilderProxy<ComponentProps<Key>, never>
+    [Key in keyof JSX.IntrinsicElements]: () => CompletedVirtualNodeProxy<ComponentProps<Key>>
   }
 
 export const svg = _.svg

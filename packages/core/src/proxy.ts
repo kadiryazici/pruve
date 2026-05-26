@@ -1,9 +1,9 @@
-import { h, type ComponentType } from "preact"
-import type { VirtualNodeBuilderProxy } from "./types.ts"
+import { Fragment, h, type ComponentType } from "preact"
+import type { RenderableProxy, VirtualNodeBuilderProxy } from "./types.ts"
 
 export const PRUVE_PROXY = Symbol.for("pruve.proxy")
 
-export function isVnodeProxy(value: unknown): value is VirtualNodeBuilderProxy<{}, never> {
+export function isVnodeProxy(value: unknown): value is RenderableProxy {
   return typeof value === "function" && (value as any)[PRUVE_PROXY] === true
 }
 
@@ -50,7 +50,7 @@ export function createVnodeProxy<Props = {}>(
       }
 
       if (key === "children") {
-        vnode.props.children = typeof vnode.type === "string"
+        vnode.props.children = typeof vnode.type === "string" || vnode.type === Fragment
           ? resolveProxyChildren(args[0])
           : args[0]
 

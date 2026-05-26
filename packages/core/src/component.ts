@@ -30,6 +30,12 @@ export function component<Props extends object = {}>(setup: ComponentSetup<Props
     }
 
     if (reactiveProps.current != null) {
+      for (const key in reactiveProps.current) {
+        if (!(key in props)) {
+          delete reactiveProps.current[key]
+        }
+      }
+
       for (const key in props) {
         reactiveProps.current[key] = props[key]
       }
@@ -46,7 +52,9 @@ export function component<Props extends object = {}>(setup: ComponentSetup<Props
     return renderedContent.current
   }
 
-  const pruveComponent = (() => createVnodeProxy<Props>(Component as any)) as PruveComponent<Props>
+  const pruveComponent = (function () {
+    return createVnodeProxy<Props>(Component as any)
+  }) as PruveComponent<Props>
 
   pruveComponent.__isPruveComponent = true
 
