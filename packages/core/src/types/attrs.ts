@@ -1,4 +1,4 @@
-import type { Signal } from "@pruve/reactivity"
+import type { WritableSignal } from "@pruve/reactivity"
 import type { Component, ComponentType, FunctionComponent, VNode } from "preact"
 import type { PruveChildren } from "../types.ts"
 
@@ -14,7 +14,7 @@ export interface Attributes {
 }
 
 export interface ClassAttributes<T> extends Attributes {
-  ref?: ((instance: T | null) => void) | Signal<T | null> | undefined
+  ref?: ((instance: T | null) => void) | WritableSignal<T | null> | undefined
 }
 
 type Booleanish = boolean | 'true' | 'false'

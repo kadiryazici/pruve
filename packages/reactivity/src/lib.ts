@@ -1,7 +1,9 @@
 export {
+  batch,
   computed,
   isInsideScope,
   isSignal,
+  isWritableSignal,
   signal,
   triggerSignal,
   useEffect,
@@ -17,4 +19,3 @@ export {
   type ShallowReactive
 } from "@vue/reactivity"
 export { pickProps } from "./utils/pickProps.ts"
-

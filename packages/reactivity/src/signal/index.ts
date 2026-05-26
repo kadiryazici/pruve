@@ -5,6 +5,7 @@ import {
   computed as vueComputed,
   shallowRef as vueSignal,
   type ComputedRef,
+  type ReactiveEffectRunner,
   type ShallowRef,
 } from "@vue/reactivity"
 
@@ -70,19 +71,58 @@ export function isSignal(value: unknown): value is Signal<unknown> {
   return value instanceof SignalImpl || value instanceof ComputedSignalImpl
 }
 
+export function isWritableSignal(value: unknown): value is WritableSignal<unknown> {
+  return value instanceof WritableSignalImpl
+}
+
 type Effect = {
   pause: () => void
   resume: () => void
   stop: () => void
 }
 
+type EffectJob = () => void
+
+let batchDepth = 0
+let scheduledJobs: Set<EffectJob> | undefined
+
+function schedule(job: EffectJob) {
+  if (batchDepth > 0) {
+    scheduledJobs ??= new Set()
+    scheduledJobs.add(job)
+    return
+  }
+
+  job()
+}
+
+export function batch<T>(fn: () => T): T {
+  batchDepth++
+
+  try {
+    return fn()
+  } finally {
+    batchDepth--
+
+    if (batchDepth === 0 && scheduledJobs != null) {
+      const jobs = scheduledJobs
+      scheduledJobs = undefined
+
+      for (const job of jobs) {
+        job()
+      }
+    }
+  }
+}
+
 export function useEffect(fn: () => void): Effect {
-  const e = effect(fn, { scheduler: () => void fn(), })
+  let runner!: ReactiveEffectRunner
+  runner = effect(fn, { scheduler: () => schedule(runner) })
 
   return {
-    pause: e.effect.pause,
-    resume: e.effect.resume,
-    stop: e.effect.stop,
+    pause: runner.effect.pause,
+    resume: runner.effect.resume,
+    stop: runner.effect.stop,
   }
 }
 
@@ -110,7 +150,7 @@ export function useUpdateEffect(
   }
 
   const e = effect(trackDeps, {
-    scheduler: fn,
+    scheduler: () => schedule(fn),
   })
 
   return {
