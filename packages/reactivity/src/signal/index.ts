@@ -1,8 +1,6 @@
 import {
   effect,
-  effectScope,
   getCurrentScope,
-  onScopeDispose,
   triggerRef,
   computed as vueComputed,
   shallowRef as vueSignal,
@@ -130,9 +128,4 @@ export function triggerSignal(signal: Signal<unknown>) {
 
 export function isInsideScope(): boolean {
   return !!getCurrentScope()
-}
-
-export {
-  effectScope,
-  onScopeDispose
 }

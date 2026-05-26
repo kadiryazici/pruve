@@ -1,3 +1,5 @@
+import type { VNode } from "preact"
+
 export type RequiredKeys<T> = {
   [K in keyof T]-?: {} extends Pick<T, K> ? never : K
 }[keyof T]
@@ -12,9 +14,9 @@ export type VirtualNodeBuilderProxy<Props, NewDefined extends string> =
   } & Omit<VirtualNodeProxy<Props, NewDefined>, "make">
 
 export type ProxyMethods<Props, DefinedProps extends string> = {
-  key: (value: VirtualNode["key"]) => VirtualNodeBuilderProxy<Props, DefinedProps>
+  key: (value: any) => VirtualNodeBuilderProxy<Props, DefinedProps>
   with: <T extends Partial<Props>>(props: T) => VirtualNodeBuilderProxy<Props, DefinedProps | (string & keyof T)>
-  make: () => VirtualNode
+  make: () => VNode<Props>
 } & {
   [Key in keyof Required<Props>]: (value: Props[Key]) => VirtualNodeBuilderProxy<Props, DefinedProps | (Key & string)>
 }
@@ -25,23 +27,16 @@ export type PropsWithChildren<Props = {}> = Props & {
   children?: PruveChildren
 }
 
-export type PruveNode = VirtualNodeProxy<{}> | VirtualNode | TextNode | boolean | undefined | number | null
+export type PruveNode = VirtualNodeProxy<any,any> | VNode | TextNode | boolean | undefined | number | null
 export type PruveChildren = PruveNode | PruveChildren[]
 
 export interface PruveComponent<Props = {}> {
   (): VirtualNodeBuilderProxy<Props, never>
-  <P>(): VirtualNodeBuilderProxy<P, never>
+  __isPruveComponent?: true
 }
 
 export interface ComponentSetup<Props = {}> {
   (props: Props): () => PruveNode
-  (props: Props): () => PruveNode
-}
-
-export type VirtualNode<Props = {}> = {
-  type: string | ComponentSetup<Props>
-  key: string | number | undefined
-  props: Record<PropertyKey, any>
 }
 
 export type TextNode = string

@@ -1,9 +1,7 @@
 export {
   computed,
-  effectScope,
   isInsideScope,
   isSignal,
-  onScopeDispose,
   signal,
   triggerSignal,
   useEffect,
@@ -12,5 +10,11 @@ export {
   type WritableSignal
 } from "./signal/index.ts"
 
+export {
+  EffectScope,
+  effectScope,
+  onScopeDispose, shallowReactive,
+  type ShallowReactive
+} from "@vue/reactivity"
 export { pickProps } from "./utils/pickProps.ts"
 

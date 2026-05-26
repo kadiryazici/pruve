@@ -8,7 +8,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@pruve/reactivity": "workspace:*"
+    "@pruve/reactivity": "workspace:*",
+    "preact": "^10.29.2",
+    "snabbdom": "3.6.3"
   },
   "type": "module",
   "keywords": [],
