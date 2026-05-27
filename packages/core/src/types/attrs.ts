@@ -1346,7 +1346,6 @@ export namespace JSXInternal {
     challenge?: Signalish<string | undefined>
     checked?: Signalish<boolean | undefined>
     cite?: Signalish<string | undefined>
-    class?: Signalish<string | undefined>
     className?: Signalish<string | undefined>
     cols?: Signalish<number | undefined>
     colSpan?: Signalish<number | undefined>
@@ -1583,7 +1582,6 @@ export namespace JSXInternal {
     autoCorrect?: Signalish<string | undefined>
     autofocus?: Signalish<boolean | undefined>
     autoFocus?: Signalish<boolean | undefined>
-    class?: Signalish<string | undefined>
     className?: Signalish<string | undefined>
     contenteditable?: Signalish<
       Booleanish | '' | 'plaintext-only' | 'inherit' | undefined
