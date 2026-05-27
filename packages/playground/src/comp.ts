@@ -11,13 +11,13 @@ import {
   usePreUpdate,
   useUpdateEffect,
   useUpdateLayoutEffect
-} from "pruve"
+} from "pruvejs"
 import {
   button,
   div,
   h1,
   p,
-} from "pruve/builtin"
+} from "pruvejs/builtin"
 
 let logId = 0
 let isRunning = false

@@ -5,7 +5,7 @@ import {
   signal,
   type PruveComponent,
   type Signal,
-} from "pruve"
+} from "pruvejs"
 import {
   button,
   div,
@@ -15,7 +15,7 @@ import {
   p,
   span,
   ul,
-} from "pruve/builtin"
+} from "pruvejs/builtin"
 
 // ---------------------------------------------------------------------------
 // 1) Counter — proves local state survives parent re-renders.

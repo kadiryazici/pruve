@@ -1,7 +1,7 @@
 {
-  "name": "pruve",
+  "name": "pruvejs",
   "version": "0.0.1",
-  "description": "",
+  "description": "A fluent UI framework with Preact rendering and fine-grained reactivity.",
   "main": "./src/lib.ts",
   "types": "./src/lib.ts",
   "exports": {
@@ -22,7 +22,14 @@
     "@pruve/reactivity": "workspace:*",
     "@pruve/core": "workspace:*"
   },
-  "keywords": [],
+  "keywords": [
+    "pruve",
+    "ui",
+    "framework",
+    "preact",
+    "vue",
+    "reactivity"
+  ],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.32.0"

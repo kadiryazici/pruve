@@ -13,6 +13,10 @@ export function component<Props extends object = {}>(setup: ComponentSetup<Props
   return pruveComponent
 }
 
+export function view<Props extends object = {}>(renderFn: (props: Props) => PruveNode): PruveComponent<Props> {
+  return component((props) => () => renderFn(props)) as PruveComponent<Props>
+}
+
 type BridgeState<Props extends object> = {
   reactiveProps: ShallowReactive<Props>
   scope: EffectScope
@@ -110,7 +114,6 @@ const createBridgeComponent = <Props extends object>(setup: ComponentSetup<Props
   return bridge.renderedContent
 }
 
-
 const useForceUpdate = () => (p.useReducer((x) => (x + 1) | 0, 0)[1]) as () => void
 
 function useLazyRef<T>(factory: () => T): { current: T } {
@@ -121,4 +124,8 @@ function useLazyRef<T>(factory: () => T): { current: T } {
   }
 
   return ref as { current: T }
+}
+
+export function isPruveComponent<T = {}>(value: unknown): value is PruveComponent<T> {
+  return typeof value === "function" && (value as any).__isPruveComponent === true
 }

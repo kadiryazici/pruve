@@ -1,16 +1,15 @@
-export { component } from "./component.ts"
-export { createContext, type PruveContext } from "./context.ts"
+export { component, isPruveComponent, view } from "./component.ts"
+export { createContext, type PruveContext, type PruveContextType } from "./context.ts"
 export * from "./instance.ts"
 export {
-  createLoader,
-  type Loader,
-  type LoaderOptions,
-  useLoaderData
+  createLoader, useLoaderData, type Loader,
+  type LoaderOptions
 } from "./loader.ts"
-export { createVnodeProxy } from "./proxy.ts"
+export { createVnodeProxy, isVnodeProxy, resolveProxyChildren } from "./proxy.ts"
 export { mount } from "./render.ts"
 export type {
   CompletedVirtualNodeProxy,
+  ComponentSetup,
   PropsWithChildren,
   PruveChildren,
   PruveComponent,
@@ -19,3 +18,4 @@ export type {
   TextNode,
   VirtualNodeProxy
 } from "./types.ts"
+

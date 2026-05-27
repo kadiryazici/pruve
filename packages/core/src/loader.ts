@@ -1,5 +1,5 @@
 import { onScopeDispose, signal, type WritableSignal } from "@pruve/reactivity"
-import { component } from "./component.ts"
+import { component, isPruveComponent } from "./component.ts"
 import { createContext, type PruveContext } from "./context.ts"
 import type { ComponentSetup, PruveComponent, PruveNode } from "./types.ts"
 
@@ -10,8 +10,8 @@ type LoaderState<Data> =
 
 export type LoaderOptions<Data, Props extends object = {}> = {
   loader: (props: Props, signal: AbortSignal) => Promise<Data>
-  getPendingRender?: (props: Props) => PruveNode
-  getErrorRender?: (error: unknown, props: Props) => PruveNode
+  pendingView?: PruveComponent<Props> | ((props: Props) => PruveNode)
+  errorView?: PruveComponent<Props> | ((error: unknown, props: Props) => PruveNode)
 }
 
 export type Loader<_Data, Props extends object = {}> = {
@@ -69,11 +69,29 @@ export function createLoader<Data, Props extends object = {}>(
 
         return () => {
           if (data.value.status === "pending") {
-            return options.getPendingRender?.(props) ?? null
+            if (isPruveComponent(options.pendingView)) {
+              return options.pendingView().with(props)
+            }
+
+            if (typeof options.pendingView === "function") {
+              return (options.pendingView as (props: Props) => PruveNode)(props)
+            }
+
+            return null
           }
 
           if (data.value.status === "rejected") {
-            return options.getErrorRender?.(data.value.error, props) ?? null
+            if (isPruveComponent(options.errorView)) {
+              return options.errorView().with(props)
+            }
+
+            if (typeof options.errorView === "function") {
+              return (
+                options.errorView as (error: unknown, props: Props) => PruveNode
+              )(data.value.error, props)
+            }
+
+            return null
           }
 
           return Component().with(props) as unknown as PruveNode

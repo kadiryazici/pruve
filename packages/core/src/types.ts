@@ -44,7 +44,7 @@ export type PruveChildren = PruveNode | PruveChildren[]
 
 export interface PruveComponent<Props = {}> {
   (): VirtualNodeBuilderProxy<Props, never>
-  __isPruveComponent?: true
+  __isPruveComponent: true
 }
 
 export interface ComponentSetup<Props = {}> {

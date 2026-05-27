@@ -8,7 +8,8 @@ import {
   mount,
   signal,
   useLoaderData,
-} from "pruve"
+  view,
+} from "pruvejs"
 import {
   button,
   div,
@@ -18,7 +19,7 @@ import {
   p,
   section,
   span,
-} from "pruve/builtin"
+} from "pruvejs/builtin"
 import { twMerge } from "tailwind-merge"
 
 function cn(...inputs: ClassValue[]) {
@@ -107,7 +108,7 @@ const ProductsLoader = createLoader<Product[], ProductsProps>({
     return catalogs[props.request]
   },
 
-  getPendingRender: (props) => (
+  pendingView: view<ProductsProps>((props) => (
     div()
       .className(cn("rounded-2xl border border-indigo-100 bg-indigo-50 p-6"))
       .children([
@@ -116,11 +117,11 @@ const ProductsLoader = createLoader<Product[], ProductsProps>({
           .children(`Loading "${props.request}" request #${props.loadId}...`),
         p()
           .className(cn("mt-2 text-sm text-slate-500"))
-          .children("Pending UI is rendered by the loader boundary.")]
-      )
-  ),
+          .children("Pending UI is rendered by the loader boundary.")
+      ])
+  )),
 
-  getErrorRender: (error, props) => (
+  errorView: (error, props) => (
     div()
       .className(cn("rounded-2xl border border-rose-200 bg-rose-50 p-6"))
       .children([
@@ -176,6 +177,12 @@ const Products = ProductsLoader.component((props) => {
   )
 })
 
+const TestView = view(() => (
+  h2()
+    .className(cn("text-lg font-medium text-slate-900"))
+    .children("This is a test view")
+))
+
 const App = component(() => {
   const request = signal<RequestName>("featured")
   const loadId = signal(1)
@@ -190,7 +197,8 @@ const App = component(() => {
   return () => (
     main()
       .className(cn("min-h-screen bg-slate-50 p-8"))
-      .children(
+      .children([
+        TestView(),
         div()
           .className(cn("mx-auto max-w-5xl rounded-3xl border border-slate-200 bg-white p-8 shadow-sm"))
           .children([
@@ -225,7 +233,7 @@ const App = component(() => {
                   .loadId(loadId.value)
               )
           ])
-      )
+      ])
   )
 })
 

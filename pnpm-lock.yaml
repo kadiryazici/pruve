@@ -29,9 +29,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
-      pruve:
+      pruvejs:
         specifier: workspace:*
-        version: link:../pruve
+        version: link:../pruvejs
       tailwind-merge:
         specifier: ^3.6.0
         version: 3.6.0
@@ -42,7 +42,7 @@ importers:
         specifier: ^8.0.14
         version: 8.0.14(jiti@2.7.0)
 
-  packages/pruve:
+  packages/pruvejs:
     dependencies:
       '@pruve/core':
         specifier: workspace:*

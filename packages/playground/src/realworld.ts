@@ -10,7 +10,7 @@ import {
   pickProps,
   signal,
   type WritableSignal,
-} from "pruve"
+} from "pruvejs"
 import {
   a,
   button,
@@ -29,7 +29,7 @@ import {
   section,
   span,
   ul,
-} from "pruve/builtin"
+} from "pruvejs/builtin"
 import { twMerge } from "tailwind-merge"
 
 function cn(...inputs: ClassValue[]) {
