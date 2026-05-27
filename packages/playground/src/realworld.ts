@@ -4,14 +4,18 @@ import { clsx, type ClassValue } from "clsx"
 import {
   component,
   computed,
+  createContext,
   mount,
+  onMount,
   signal,
+  type WritableSignal,
 } from "pruve"
 import {
   a,
   button,
   div,
   footer,
+  Fragment,
   h1,
   h2,
   h3,
@@ -107,17 +111,22 @@ const products: Product[] = [
 const categories: Category[] = ["All", "Workspace", "Travel", "Audio", "Home"]
 
 type NavbarProps = {
-  route: Route
-  savedCount: number
-  cartCount: number
   onNavigate: (route: Route) => void
 }
 
+const AppContext = createContext<{
+  route: WritableSignal<Route>
+  cart: WritableSignal<Map<number, number>>
+  saved: WritableSignal<Set<number>>
+}>()
+
 const Navbar = component<NavbarProps>((props) => {
+  const { route, cart, saved } = AppContext.inject()!
+
   const routes = computed(() => ([
     { name: "Discover", route: "discover" as Route },
-    { name: `Saved (${props.savedCount})`, route: "saved" as Route },
-    { name: `Cart (${props.cartCount})`, route: "cart" as Route },
+    { name: `Saved (${saved.value.size})`, route: "saved" as Route },
+    { name: `Cart (${cart.value.size})`, route: "cart" as Route },
   ]))
 
   return () => (
@@ -146,22 +155,22 @@ const Navbar = component<NavbarProps>((props) => {
             div()
               .className(cn("hidden items-center gap-2 md:flex"))
               .children([
-                routes.value.map((route) => (
+                routes.value.map((item) => (
                   button()
                     .className(cn(
                       "rounded-full px-4 py-2 text-sm font-medium transition",
-                      props.route === route.route
+                      route.value === item.route
                         ? "bg-slate-900 text-white shadow-sm"
                         : "text-slate-500 hover:bg-slate-100 hover:text-slate-900",
                     ))
-                    .onClick(() => props.onNavigate(route.route))
-                    .children(route.name)
+                    .onClick(() => props.onNavigate(item.route))
+                    .children(item.name)
                 )),
               ]),
             button()
               .className(cn("rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white md:hidden"))
               .onClick(() => props.onNavigate("cart"))
-              .children(`Cart ${props.cartCount}`),
+              .children(`Cart (${cart.value.size})`),
           ]),
       )
   )
@@ -173,8 +182,15 @@ type MetricProps = {
 }
 
 const Metric = component<MetricProps>((props) => {
+  const el = signal<HTMLDivElement | null>(null)
+
+  onMount(() => {
+    console.log("Metric mounted with el:", el.value)
+  })
+
   return () => (
     div()
+      .ref(el)
       .className(cn("rounded-2xl border border-white/10 bg-white/10 p-4"))
       .children([
         p()
@@ -242,11 +258,24 @@ type ProductCardProps = {
   product: Product
   saved: boolean
   quantity: number
-  onToggleSaved: (id: number) => void
-  onAdd: (id: number) => void
 }
 
 const ProductCard = component<ProductCardProps>((props) => {
+  const { saved, cart } = AppContext.inject()!
+
+  const onToggleSaved = (id: number) => {
+    const next = new Set(saved.value)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    saved.set(next)
+  }
+
+  const onAdd = (id: number) => {
+    const next = new Map(cart.value)
+    next.set(id, (next.get(id) ?? 0) + 1)
+    cart.set(next)
+  }
+
   return () => (
     articleCard()
       .children([
@@ -261,7 +290,7 @@ const ProductCard = component<ProductCardProps>((props) => {
                 "absolute right-4 top-4 rounded-full p-2 text-lg shadow-sm transition",
                 props.saved ? "bg-slate-900 text-white" : "bg-white/80 text-slate-600",
               ))
-              .onClick(() => props.onToggleSaved(props.product.id))
+              .onClick(() => onToggleSaved(props.product.id))
               .children(props.saved ? "Saved" : "Save"),
             span()
               .className(cn("text-5xl text-slate-900/20"))
@@ -300,7 +329,7 @@ const ProductCard = component<ProductCardProps>((props) => {
               .children(props.product.description),
             button()
               .className(cn("mt-5 w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"))
-              .onClick(() => props.onAdd(props.product.id))
+              .onClick(() => onAdd(props.product.id))
               .children(props.quantity === 0 ? "Add to cart" : `Add another - in cart: ${props.quantity}`),
           ]),
       ])
@@ -347,19 +376,8 @@ const CartRow = component<CartRowProps>((props) => {
   )
 })
 
-const App = component(() => {
-  const route = signal<Route>("discover")
-  const category = signal<Category>("All")
-  const query = signal("")
-  const saved = signal(new Set<number>())
-  const cart = signal(new Map<number, number>())
-
-  const savedCount = computed(() => saved.value.size)
-
-  const cartCount = computed(() => (
-    Array.from(cart.value.values())
-      .reduce((total, quantity) => total + quantity, 0)
-  ))
+const CartRoute = component(() => {
+  const { route, cart } = AppContext.inject()!
 
   const subtotal = computed(() => (
     products.reduce((total, product) => (
@@ -367,13 +385,80 @@ const App = component(() => {
     ), 0)
   ))
 
-  const collectionLabel = computed(() => (
-    route.value === "saved" ? "Your collection" : "Store"
+  const cartRows = computed(() => (
+    products
+      .filter((product) => cart.value.has(product.id))
+      .map((product) => ({
+        product,
+        quantity: cart.value.get(product.id) ?? 0,
+      }))
   ))
 
-  const collectionTitle = computed(() => (
-    route.value === "saved" ? "Saved items" : "Explore products"
-  ))
+  const removeFromCart = (id: number) => {
+    const next = new Map(cart.value)
+    next.delete(id)
+    cart.set(next)
+  }
+
+  return () => (
+    section()
+      .className(cn("mx-auto max-w-3xl py-8"))
+      .children([
+        div()
+          .className(cn("mb-8 flex items-center justify-between"))
+          .children([
+            h2()
+              .className(cn("text-3xl font-semibold tracking-tight"))
+              .children("Your cart"),
+            button()
+              .className(cn("text-sm font-medium text-slate-500"))
+              .onClick(() => route.set("discover"))
+              .children("Continue shopping"),
+          ]),
+        cartRows.value.length === 0
+          ? p()
+            .className(cn("rounded-3xl bg-white p-10 text-center text-slate-500"))
+            .children("Your cart is empty. Find something beautiful.")
+          : div()
+            .className(cn("rounded-3xl bg-white p-6 shadow-sm"))
+            .children([
+              ul()
+                .children(cartRows.value.map((row) =>
+                  CartRow()
+                    .key(row.product.id)
+                    .product(row.product)
+                    .quantity(row.quantity)
+                    .onRemove(removeFromCart),
+                )),
+              div()
+                .className(cn("mt-6 flex items-center justify-between border-t border-slate-200 pt-6"))
+                .children([
+                  div()
+                    .children([
+                      p()
+                        .className(cn("text-sm text-slate-500"))
+                        .children("Subtotal"),
+                      p()
+                        .className(cn("text-2xl font-semibold"))
+                        .children(`$${subtotal.value}`),
+                    ]),
+                  button()
+                    .className(cn("rounded-xl bg-emerald-500 px-7 py-3 font-medium text-white"))
+                    .children("Checkout"),
+                ]),
+            ]),
+      ])
+  )
+})
+
+const DiscoverRoute = component(() => {
+  const { saved, cart } = AppContext.inject()!
+
+  const category = signal<Category>("All")
+  const query = signal("")
+
+  const collectionLabel = "Store"
+  const collectionTitle = "Explore products"
 
   const categoryTabs = computed(() => (
     categories.map((entry) => ({
@@ -389,9 +474,8 @@ const App = component(() => {
       .filter((product) => {
         const categoryMatch = category.value === "All" || product.category === category.value
         const searchMatch = search === "" || `${product.name} ${product.description}`.toLowerCase().includes(search)
-        const routeMatch = route.value !== "saved" || saved.value.has(product.id)
 
-        return categoryMatch && searchMatch && routeMatch
+        return categoryMatch && searchMatch
       })
       .map((product) => ({
         product,
@@ -400,32 +484,166 @@ const App = component(() => {
       }))
   })
 
-  const cartRows = computed(() => (
-    products
-      .filter((product) => cart.value.has(product.id))
-      .map((product) => ({
-        product,
-        quantity: cart.value.get(product.id) ?? 0,
-      }))
+  return () => (
+    Fragment()
+      .children([
+        Hero(),
+        section()
+          .className(cn("py-10"))
+          .children([
+            div()
+              .className(cn("mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end"))
+              .children([
+                div()
+                  .children([
+                    p()
+                      .className(cn("text-sm font-medium uppercase tracking-wider text-emerald-600"))
+                      .children(collectionLabel),
+                    h2()
+                      .className(cn("mt-2 text-3xl font-semibold tracking-tight"))
+                      .children(collectionTitle),
+                  ]),
+                input()
+                  .className(cn("w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-emerald-400 focus:ring-2 md:w-72"))
+                  .placeholder("Search products")
+                  .value(query.value)
+                  .onInput((event) => query.set((event.currentTarget as HTMLInputElement).value)),
+              ]),
+            div()
+              .className(cn("mb-7 flex flex-wrap gap-2"))
+              .children(
+                categoryTabs.value.map((tab) => (
+                  button()
+                    .key(tab.entry)
+                    .className(cn(
+                      "rounded-full border px-4 py-2 text-sm font-medium transition",
+                      tab.selected
+                        ? "border-slate-900 bg-slate-900 text-white"
+                        : "border-slate-200 bg-white text-slate-600",
+                    ))
+                    .onClick(() => category.set(tab.entry))
+                    .children(tab.entry)
+                )),
+              ),
+            visibleProducts.value.length === 0
+              ? p()
+                .className(cn("rounded-3xl bg-white p-12 text-center text-slate-500"))
+                .children("No matching products found.")
+              : div()
+                .className(cn("grid gap-6 md:grid-cols-2 lg:grid-cols-3"))
+                .children(
+                  visibleProducts.value.map((entry) => (
+                    ProductCard()
+                      .key(entry.product.id)
+                      .product(entry.product)
+                      .saved(entry.saved)
+                      .quantity(entry.quantity)
+                  )),
+                ),
+          ])
+      ])
+  )
+})
+
+const SavedRoute = component(() => {
+  const { saved, cart } = AppContext.inject()!
+
+  const category = signal<Category>("All")
+  const query = signal("")
+
+  const categoryTabs = computed(() => (
+    categories.map((entry) => ({
+      entry,
+      selected: category.value === entry,
+    }))
   ))
 
-  const toggleSaved = (id: number) => {
-    const next = new Set(saved.value)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    saved.set(next)
-  }
+  const visibleProducts = computed(() => {
+    const search = query.value.trim().toLowerCase()
 
-  const addToCart = (id: number) => {
-    const next = new Map(cart.value)
-    next.set(id, (next.get(id) ?? 0) + 1)
-    cart.set(next)
-  }
+    return products
+      .filter((product) => {
+        const categoryMatch = category.value === "All" || product.category === category.value
+        const searchMatch = search === "" || `${product.name} ${product.description}`.toLowerCase().includes(search)
+        const savedMatch = saved.value.has(product.id)
 
-  const removeFromCart = (id: number) => {
-    const next = new Map(cart.value)
-    next.delete(id)
-    cart.set(next)
+        return categoryMatch && searchMatch && savedMatch
+      })
+      .map((product) => ({
+        product,
+        saved: true,
+        quantity: cart.value.get(product.id) ?? 0,
+      }))
+  })
+
+  return () => (
+    section()
+      .className(cn("py-10"))
+      .children([
+        div()
+          .className(cn("mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end"))
+          .children([
+            div()
+              .children([
+                p()
+                  .className(cn("text-sm font-medium uppercase tracking-wider text-emerald-600"))
+                  .children("Your collection"),
+                h2()
+                  .className(cn("mt-2 text-3xl font-semibold tracking-tight"))
+                  .children("Saved items"),
+              ]),
+            input()
+              .className(cn("w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-emerald-400 focus:ring-2 md:w-72"))
+              .placeholder("Search saved products")
+              .value(query.value)
+              .onInput((event) => query.set((event.currentTarget as HTMLInputElement).value)),
+          ]),
+        div()
+          .className(cn("mb-7 flex flex-wrap gap-2"))
+          .children(
+            categoryTabs.value.map((tab) => (
+              button()
+                .key(tab.entry)
+                .className(cn(
+                  "rounded-full border px-4 py-2 text-sm font-medium transition",
+                  tab.selected
+                    ? "border-slate-900 bg-slate-900 text-white"
+                    : "border-slate-200 bg-white text-slate-600",
+                ))
+                .onClick(() => category.set(tab.entry))
+                .children(tab.entry)
+            )),
+          ),
+        visibleProducts.value.length === 0
+          ? p()
+            .className(cn("rounded-3xl bg-white p-12 text-center text-slate-500"))
+            .children("No saved products found.")
+          : div()
+            .className(cn("grid gap-6 md:grid-cols-2 lg:grid-cols-3"))
+            .children(
+              visibleProducts.value.map((entry) => (
+                ProductCard()
+                  .key(entry.product.id)
+                  .product(entry.product)
+                  .saved(entry.saved)
+                  .quantity(entry.quantity)
+              )),
+            ),
+      ])
+  )
+})
+
+const App = component(() => {
+  const route = signal<Route>("discover")
+  const saved = signal(new Set<number>())
+  const cart = signal(new Map<number, number>())
+
+  AppContext.provide({ route, cart, saved })
+
+  const routeMap = {
+    discover: DiscoverRoute,
+    saved: SavedRoute,
+    cart: CartRoute,
   }
 
   return () => (
@@ -433,118 +651,12 @@ const App = component(() => {
       .className(cn("min-h-screen bg-slate-50 text-slate-900"))
       .children([
         Navbar()
-          .route(route.value)
-          .savedCount(savedCount.value)
-          .cartCount(cartCount.value)
           .onNavigate((nextRoute) => route.set(nextRoute)),
         main()
           .className(cn("mx-auto max-w-7xl px-6 py-8"))
-          .children([
-            route.value === "discover" ? Hero() : null,
-            route.value === "cart"
-              ? section()
-                .className(cn("mx-auto max-w-3xl py-8"))
-                .children([
-                  div()
-                    .className(cn("mb-8 flex items-center justify-between"))
-                    .children([
-                      h2()
-                        .className(cn("text-3xl font-semibold tracking-tight"))
-                        .children("Your cart"),
-                      button()
-                        .className(cn("text-sm font-medium text-slate-500"))
-                        .onClick(() => route.set("discover"))
-                        .children("Continue shopping"),
-                    ]),
-                  cartRows.value.length === 0
-                    ? p()
-                      .className(cn("rounded-3xl bg-white p-10 text-center text-slate-500"))
-                      .children("Your cart is empty. Find something beautiful.")
-                    : div()
-                      .className(cn("rounded-3xl bg-white p-6 shadow-sm"))
-                      .children([
-                        ul()
-                          .children(cartRows.value.map((row) =>
-                            CartRow()
-                              .key(row.product.id)
-                              .product(row.product)
-                              .quantity(row.quantity)
-                              .onRemove(removeFromCart),
-                          )),
-                        div()
-                          .className(cn("mt-6 flex items-center justify-between border-t border-slate-200 pt-6"))
-                          .children([
-                            div()
-                              .children([
-                                p()
-                                  .className(cn("text-sm text-slate-500"))
-                                  .children("Subtotal"),
-                                p()
-                                  .className(cn("text-2xl font-semibold"))
-                                  .children(`$${subtotal.value}`),
-                              ]),
-                            button()
-                              .className(cn("rounded-xl bg-emerald-500 px-7 py-3 font-medium text-white"))
-                              .children("Checkout"),
-                          ]),
-                      ]),
-                ])
-              : section()
-                .className(cn("py-10"))
-                .children([
-                  div()
-                    .className(cn("mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end"))
-                    .children([
-                      div()
-                        .children([
-                          p()
-                            .className(cn("text-sm font-medium uppercase tracking-wider text-emerald-600"))
-                            .children(collectionLabel.value),
-                          h2()
-                            .className(cn("mt-2 text-3xl font-semibold tracking-tight"))
-                            .children(collectionTitle.value),
-                        ]),
-                      input()
-                        .className(cn("w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none ring-emerald-400 focus:ring-2 md:w-72"))
-                        .placeholder("Search products")
-                        .value(query.value)
-                        .onInput((event) => query.set((event.currentTarget as HTMLInputElement).value)),
-                    ]),
-                  div()
-                    .className(cn("mb-7 flex flex-wrap gap-2"))
-                    .children(
-                      categoryTabs.value.map((tab) => (
-                        button()
-                          .key(tab.entry)
-                          .className(cn(
-                            "rounded-full border px-4 py-2 text-sm font-medium transition",
-                            tab.selected
-                              ? "border-slate-900 bg-slate-900 text-white"
-                              : "border-slate-200 bg-white text-slate-600",
-                          ))
-                          .onClick(() => category.set(tab.entry))
-                          .children(tab.entry)
-                      )),
-                    ),
-                  visibleProducts.value.length === 0
-                    ? p()
-                      .className(cn("rounded-3xl bg-white p-12 text-center text-slate-500"))
-                      .children("No matching products found.")
-                    : div()
-                      .className(cn("grid gap-6 md:grid-cols-2 lg:grid-cols-3"))
-                      .children(
-                        visibleProducts.value.map((entry) => (
-                          ProductCard()
-                            .key(entry.product.id)
-                            .product(entry.product)
-                            .saved(entry.saved)
-                            .quantity(entry.quantity)
-                            .onToggleSaved(toggleSaved)
-                            .onAdd(addToCart)
-                        )),
-                      ),
-                ]),
-          ]),
+          .children(
+            routeMap[route.value](),
+          ),
         footer()
           .className(cn("border-t border-slate-200 bg-white px-6 py-8 text-center text-sm text-slate-500"))
           .children([

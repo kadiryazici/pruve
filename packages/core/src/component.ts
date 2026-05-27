@@ -6,7 +6,6 @@ import { type ComponentInstance, getCurrentComponentInstance, setCurrentComponen
 import { createVnodeProxy, resolveProxyChildren } from "./proxy.ts"
 import type { ComponentSetup, PruveComponent, PruveNode } from "./types.ts"
 
-
 export function component<Props extends object = {}>(setup: ComponentSetup<Props>): PruveComponent<Props> {
   const component = createBridgeComponent(setup)
   const pruveComponent = (() => createVnodeProxy<Props>(component as any)) as PruveComponent<Props>
@@ -91,12 +90,12 @@ const createBridgeComponent = <Props extends object>(setup: ComponentSetup<Props
   p.useEffect(() => {
     bridge.componentInstance.mountHooks
       .forEach((hook) => void hook())
+  }, [])
 
-    return () => {
-      bridge.scope.stop()
-      bridge.componentInstance.unmountHooks
-        .forEach((hook) => void hook())
-    }
+  p.useEffect(() => () => {
+    bridge.scope.stop()
+    bridge.componentInstance.unmountHooks
+      .forEach((hook) => void hook())
   }, [])
 
   p.useLayoutEffect(() => {
