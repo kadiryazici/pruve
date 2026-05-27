@@ -1,19 +1,21 @@
 import {
-  button,
   component,
   createContext,
+  mount,
+  signal,
+  type PruveComponent,
+  type Signal,
+} from "pruve"
+import {
+  button,
   div,
   h1,
   h2,
   li,
-  mount,
   p,
-  signal,
   span,
   ul,
-  type PruveComponent,
-  type Signal,
-} from "pruve"
+} from "pruve/builtin"
 
 // ---------------------------------------------------------------------------
 // 1) Counter — proves local state survives parent re-renders.

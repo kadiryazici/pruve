@@ -4,6 +4,16 @@
   "description": "",
   "main": "./src/lib.ts",
   "types": "./src/lib.ts",
+  "exports": {
+    ".": {
+      "types": "./src/lib.ts",
+      "default": "./src/lib.ts"
+    },
+    "./builtin": {
+      "types": "./src/builtin.ts",
+      "default": "./src/builtin.ts"
+    }
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

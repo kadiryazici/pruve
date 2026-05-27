@@ -1,13 +1,9 @@
 import {
-  button,
   component,
-  div,
-  h1,
   mount,
   onEffectCleanup,
   onMount,
   onUnmount,
-  p,
   signal,
   useEffect,
   useLayoutEffect,
@@ -16,6 +12,12 @@ import {
   useUpdateEffect,
   useUpdateLayoutEffect
 } from "pruve"
+import {
+  button,
+  div,
+  h1,
+  p,
+} from "pruve/builtin"
 
 let logId = 0
 let isRunning = false

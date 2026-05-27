@@ -1,4 +1,3 @@
-export * from "./builtin.ts"
 export { component } from "./component.ts"
 export { createContext, type PruveContext } from "./context.ts"
 export * from "./instance.ts"
