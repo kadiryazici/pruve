@@ -19,7 +19,7 @@ export function setCurrentComponentInstance(instance: ComponentInstance | null):
   currentComponentInstance = instance
 }
 
-export function onMount(fn: () => void) {
+export function useMount(fn: () => void) {
   const instance = getCurrentComponentInstance()
   instance?.mountHooks.add(fn)
   return () => {
@@ -27,7 +27,7 @@ export function onMount(fn: () => void) {
   }
 }
 
-export function onUnmount(fn: () => void) {
+export function useUnmount(fn: () => void) {
   if (isInsideScope()) {
     onScopeDispose(fn)
   }

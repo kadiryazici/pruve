@@ -1,5 +1,6 @@
 export {
-  component, createContext, createLoader, createVnodeProxy, isPruveComponent, isVnodeProxy, mount, onMount, onUnmount, resolveProxyChildren, useLayoutEffect, useLayoutUpdate, useLoaderData, usePreUpdate, useUpdateLayoutEffect, view, type ComponentSetup,
+  component, createContext, createLoader, createVnodeProxy, isPruveComponent, isVnodeProxy, mount, resolveProxyChildren, useLayoutEffect, useLayoutUpdate, useLoaderData, useMount, usePreUpdate, useUnmount, useUpdateLayoutEffect, view,
+  type ComponentSetup,
   type Loader,
   type LoaderOptions,
   type PropsWithChildren,
@@ -9,12 +10,14 @@ export {
   type VirtualNodeProxy
 } from "@pruve/core"
 
+export { type ComponentProps } from "./builtin.ts"
+
 export {
-  batch, computed, effectScope,
-  isInsideScope, isSignal, isWritableSignal, onEffectCleanup, onScopeDispose,
+  batch, computed, effectScope, isInsideScope, isSignal, isWritableSignal, onEffectCleanup, onScopeDispose,
   pickProps,
   signal,
-  triggerSignal, type Effect,
+  triggerSignal, useEffect,
+  useUpdateEffect, type Effect,
   type EffectCleanup,
   type EffectScope,
   type ScheduledEffect,

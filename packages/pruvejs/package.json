@@ -20,8 +20,14 @@
   },
   "dependencies": {
     "@pruve/reactivity": "workspace:*",
-    "@pruve/core": "workspace:*"
+    "@pruve/core": "workspace:*",
+    "@vue/reactivity": "^3.5.34",
+    "preact": "11.0.0-beta.1"
   },
+  "bundledDependencies": [
+    "@pruve/core",
+    "@pruve/reactivity"
+  ],
   "keywords": [
     "pruve",
     "ui",

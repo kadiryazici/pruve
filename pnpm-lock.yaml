@@ -50,6 +50,12 @@ importers:
       '@pruve/reactivity':
         specifier: workspace:*
         version: link:../reactivity
+      '@vue/reactivity':
+        specifier: ^3.5.34
+        version: 3.5.34
+      preact:
+        specifier: 11.0.0-beta.1
+        version: 11.0.0-beta.1
 
   packages/reactivity:
     dependencies:
