@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@pruve/reactivity": "workspace:*",
-    "preact": "^10.29.2",
+    "preact": "11.0.0-beta.1",
     "snabbdom": "3.6.3"
   },
   "type": "module",

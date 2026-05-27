@@ -17,12 +17,9 @@ importers:
       '@pruve/reactivity':
         specifier: workspace:*
         version: link:../reactivity
-      '@vue/reactivity':
-        specifier: ^3.5.34
-        version: 3.5.34
       preact:
-        specifier: ^10.29.2
-        version: 10.29.2
+        specifier: 11.0.0-beta.1
+        version: 11.0.0-beta.1
       snabbdom:
         specifier: 3.6.3
         version: 3.6.3
@@ -333,8 +330,8 @@ packages:
     resolution: {integrity: sha512-FfR8sjd4em2T6fb3I2MwAJU7HWVMr9zba+enmQeeWFfCbm+UOC/0X4DS8XtpUTMwWMGbjKYP7xjfNekzyGmB3A==}
     engines: {node: ^10 || ^12 || >=14}
 
-  preact@10.29.2:
-    resolution: {integrity: sha512-7tNmwg/7mzzAoB/8kSg6Hl37JraAZw3Z3A0JSY7VXlZwo82Xn0G7wKbNNs2qoF4ZEEsQGTwDAroNdqKs1ofJxQ==}
+  preact@11.0.0-beta.1:
+    resolution: {integrity: sha512-HEG7hlrCoGpESpCgvuOwt9v7nfqd3/FQCMY8OTrohIN/k6JGcVTWMUOm7+WtWkHd6uQrEYNyQUNgBG4JsDmhRQ==}
 
   rolldown@1.0.2:
     resolution: {integrity: sha512-oZx5zVDtVB44AW3eaifgDml1gWRDZGvjcfdxonE4swNPG98PrrXjaO/KrnUjzlMnztCCRVlUueA1kCXhARGk6g==}
@@ -589,7 +586,7 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  preact@10.29.2: {}
+  preact@11.0.0-beta.1: {}
 
   rolldown@1.0.2:
     dependencies:

@@ -1,22 +1,8 @@
-import { Fragment, h, type ComponentType } from "preact"
 import { isWritableSignal } from "@pruve/reactivity"
-import type { WritableSignal } from "@pruve/reactivity"
+import { Fragment, h, type ComponentType } from "preact"
 import type { RenderableProxy, VirtualNodeBuilderProxy } from "./types.ts"
 
 export const PRUVE_PROXY = Symbol.for("pruve.proxy")
-
-const elementRefCallbacks = new WeakMap<WritableSignal<unknown>, (instance: unknown) => void>()
-
-function resolveElementRef(ref: WritableSignal<unknown>) {
-  let callback = elementRefCallbacks.get(ref)
-
-  if (callback == null) {
-    callback = (instance: unknown) => ref.set(instance)
-    elementRefCallbacks.set(ref, callback)
-  }
-
-  return callback
-}
 
 export function isVnodeProxy(value: unknown): value is RenderableProxy {
   return typeof value === "function" && (value as any)[PRUVE_PROXY] === true
@@ -71,8 +57,16 @@ export function createVnodeProxy<Props = {}>(
         return proxy
       }
 
-      if (key === "ref" && typeof vnode.type === "string" && isWritableSignal(args[0])) {
-        vnode.props.ref = resolveElementRef(args[0])
+      if (key === "ref") {
+        const arg = args[0]
+
+        vnode.props.ref = (instance: unknown) => {
+          if (isWritableSignal(arg)) {
+            arg.set(instance)
+          } else if (typeof arg === "function") {
+            arg(instance)
+          }
+        }
         return proxy
       }
 

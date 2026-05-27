@@ -117,7 +117,7 @@ const createBridgeComponent = <Props extends object>(setup: ComponentSetup<Props
 
 const useForceUpdate = () => (p.useReducer((x) => (x + 1) | 0, 0)[1]) as () => void
 
-function useLazyRef<T>(factory: () => T): p.MutableRef<T> {
+function useLazyRef<T>(factory: () => T): { current: T } {
   const ref = p.useRef<T | null>(null)
 
   if (ref.current === null) {

@@ -7,7 +7,7 @@ import type { CompletedVirtualNodeProxy, PropsWithChildren, PruveComponent, Virt
 export type ComponentProps<
   T extends keyof JSX.IntrinsicElements
   | PruveComponent<unknown>
-  | ComponentType<unknown>
+  | ComponentType<any>
 > = T extends PruveComponent<infer Props>
   ? PropsWithChildren<Props>
   : T extends keyof JSX.IntrinsicElements
