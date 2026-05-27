@@ -1,114 +1,165 @@
-import { button, component, div, Fragment, mount, signal, type PruveChildren } from "pruve"
+import {
+  button,
+  component,
+  div,
+  h1,
+  mount,
+  onLayoutUpdate,
+  onMount,
+  onUnmount,
+  onUpdate,
+  p,
+  signal,
+  useLayoutEffect,
+  useUpdateLayoutEffect
+} from "pruve"
 
-type ButtonProps = {
-  count: number
-  onSetCount: (count: number) => void
+let logId = 0
+let isRunning = false
+
+function log(message: string): void {
+  console.log(`[TEST ${++logId}] ${message}`)
 }
 
-type PanelProps = {
-  children: PruveChildren
+function wait(ms = 160): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
 }
 
-type BatchProbeProps = {
-  first: number
-  second: number
-  note?: string
+function readProbeDom(): string {
+  return document.getElementById("probe-dom-value")?.textContent ?? "(probe is not mounted)"
 }
 
-const Panel = component((props: PanelProps) => {
-  console.log("[SETUP] Panel")
+async function click(id: string, label: string): Promise<void> {
+  log(`[ACTION] ${label}`)
+  document.getElementById(id)?.click()
+  await wait()
+  log(`[AFTER ACTION] ${label} | page DOM: ${readProbeDom()}`)
+}
+
+const LifecycleProbe = component(() => {
+  const domValue = signal(0)
+  const effectOnlyValue = signal(0)
+
+  const hook = (name: string, values = ""): void => {
+    log(`[HOOK] ${name}${values} | observed DOM: ${readProbeDom()}`)
+  }
+
+  onMount(() => {
+    hook("onMount")
+  })
+
+  onUnmount(() => {
+    hook("onUnmount")
+  })
+
+  onUpdate(() => {
+    hook("onUpdate")
+  })
+
+  onLayoutUpdate(() => {
+    hook("onLayoutUpdate")
+  })
+
+  useLayoutEffect(() => {
+    hook("useLayoutEffect", ` | domValue=${domValue.value}`)
+  })
+
+  useUpdateLayoutEffect(() => {
+    hook("useUpdateLayoutEffect", ` | domValue=${domValue.value}, effectOnlyValue=${effectOnlyValue.value}`)
+  }, () => {
+    domValue.value
+    effectOnlyValue.value
+  })
 
   return () => {
-    console.log("[RENDER] Panel")
+    log(`[RENDER] LifecycleProbe | domValue=${domValue.value}`)
 
     return div()
-      .style("border:1px solid #bbb;padding:12px;display:inline-flex;gap:8px")
-      .children(props.children)
-  }
-})
-
-const BatchProbe = component((props: BatchProbeProps) => {
-  let renderCount = 0
-
-  console.log("[SETUP] BatchProbe")
-
-  return () => {
-    renderCount++
-
-    console.log("[RENDER] BatchProbe", {
-      renderCount,
-      first: props.first,
-      second: props.second,
-      note: props.note
-    })
-
-    return div().children(
-      `BatchProbe render=${renderCount}, first=${props.first}, second=${props.second}, note=${props.note ?? "(removed)"}`
-    )
-  }
-})
-
-const MyButton = component((props: ButtonProps) => {
-  const innerCount = signal(0)
-
-  console.log("[SETUP] MyButton")
-
-  return () => {
-    console.log("[RENDER] MyButton", {
-      innerCount: innerCount.value,
-      outerCount: props.count
-    })
-
-    return div()
+      .style("padding:12px;border:1px dashed #64748b;display:flex;flex-direction:column;gap:10px")
       .children([
-        button()
-          .children(`Inner Count: ${innerCount.value}`)
-          .onClick(() => {
-            innerCount.set(innerCount.value + 1)
-          }),
-        button()
-          .children(`Outer Count: ${props.count}`)
-          .onClick(() => {
-            props.onSetCount(props.count + 1)
-          })
+        div()
+          .id("probe-dom-value")
+          .style("font-weight:bold")
+          .children(`DOM value: ${domValue.value}`),
+        p().children("The effect-only value is tracked by the layout effect, but is not rendered into this component."),
+        div()
+          .style("display:flex;gap:8px;flex-wrap:wrap")
+          .children([
+            button()
+              .id("probe-update-dom")
+              .children("Manually update DOM dependency")
+              .onClick(() => {
+                domValue.set(domValue.value + 1)
+              }),
+            button()
+              .id("probe-update-effect-only")
+              .children("Manually update effect-only dependency")
+              .onClick(() => {
+                effectOnlyValue.set(effectOnlyValue.value + 1)
+              })
+          ])
       ])
   }
 })
+
+async function runSuite(): Promise<void> {
+  if (isRunning) {
+    return
+  }
+
+  isRunning = true
+  logId = 0
+  console.clear()
+
+  log("BEGIN automated lifecycle suite")
+  log("Each action waits briefly to simulate separate human clicks.")
+
+  await click("toggle-probe", "unmount existing probe and collect onUnmount")
+  await click("toggle-probe", "mount a fresh probe")
+  await click("probe-update-dom", "update rendered dependency from 0 to 1")
+  await click("probe-update-dom", "update rendered dependency from 1 to 2")
+  await click("probe-update-effect-only", "update dependency without a DOM render")
+  await click("toggle-probe", "unmount probe after updates")
+  await click("toggle-probe", "remount probe with fresh local state")
+  await click("probe-update-dom", "update freshly mounted probe from 0 to 1")
+
+  log("END automated lifecycle suite - send this console output back for review.")
+  isRunning = false
+}
 
 const App = component(() => {
-  const count = signal(0)
-  const probeStep = signal(0)
-
-  console.log("[SETUP] App")
+  const showProbe = signal(true)
 
   return () => {
-    console.log("[RENDER] App", {
-      count: count.value,
-      probeStep: probeStep.value
-    })
-
-    const probe = BatchProbe()
-      .first(probeStep.value)
-      .second(probeStep.value * 10)
-
-    return Fragment().children(
-      Panel().children([
-        MyButton()
-          .count(count.value)
-          .onSetCount((newCount) => {
-            count.set(newCount)
-          }),
-        div().children(`Current Count: ${count.value}`),
-        button()
-          .children("Update BatchProbe props")
-          .onClick(() => {
-            probeStep.set(probeStep.value + 1)
-          }),
-        probeStep.value % 2 === 0
-          ? probe.note("present on even steps")
-          : probe
+    return div()
+      .style("font-family:system-ui;max-width:820px;margin:24px auto;display:flex;flex-direction:column;gap:14px")
+      .children([
+        h1().children("Pruve lifecycle visual test suite"),
+        p().children("Open DevTools Console, click Run automated suite once, then send the resulting [TEST] lines."),
+        div()
+          .style("display:flex;gap:8px;flex-wrap:wrap")
+          .children([
+            button()
+              .id("run-suite")
+              .children("Run automated suite")
+              .onClick(() => {
+                void runSuite()
+              }),
+            button()
+              .id("toggle-probe")
+              .children(showProbe.value ? "Manually unmount probe" : "Manually mount probe")
+              .onClick(() => {
+                showProbe.set(!showProbe.value)
+              })
+          ]),
+        showProbe.value
+          ? LifecycleProbe()
+          : div()
+            .style("padding:12px;border:1px dashed #64748b")
+            .children("Probe is currently unmounted.")
       ])
-    )
   }
 })
 

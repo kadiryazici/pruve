@@ -1,6 +1,6 @@
 export * from "./builtin.ts"
 export { component } from "./component.ts"
-export * from "./lifecycles.ts"
+export * from "./instance.ts"
 export { createVnodeProxy } from "./proxy.ts"
 export { mount } from "./render.ts"
 export type {
@@ -13,3 +13,4 @@ export type {
   TextNode,
   VirtualNodeProxy
 } from "./types.ts"
+

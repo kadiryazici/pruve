@@ -27,8 +27,7 @@ export function createVnodeProxy<Props = {}>(
 ): VirtualNodeBuilderProxy<Props, never> {
   const vnode = {
     type,
-    props: {} as Record<PropertyKey, any>,
-    key: undefined
+    props: {} as Record<PropertyKey, any>
   }
 
   let pendingKey: PropertyKey | undefined
@@ -60,7 +59,7 @@ export function createVnodeProxy<Props = {}>(
       }
 
       if (key === "key") {
-        vnode.key = args[0] as any
+        vnode.props.key = args[0]
         return proxy
       }
 

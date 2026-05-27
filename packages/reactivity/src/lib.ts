@@ -4,10 +4,14 @@ export {
   isInsideScope,
   isSignal,
   isWritableSignal,
+  scheduledEffect,
   signal,
+  trackEffectDeps,
   triggerSignal,
   useEffect,
   useUpdateEffect,
+  type Effect,
+  type ScheduledEffect,
   type Signal,
   type WritableSignal
 } from "./signal/index.ts"

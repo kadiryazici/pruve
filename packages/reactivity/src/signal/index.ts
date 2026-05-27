@@ -75,10 +75,14 @@ export function isWritableSignal(value: unknown): value is WritableSignal<unknow
   return value instanceof WritableSignalImpl
 }
 
-type Effect = {
+export type Effect = {
   pause: () => void
   resume: () => void
   stop: () => void
+}
+
+export type ScheduledEffect = Effect & {
+  run: () => void
 }
 
 type EffectJob = () => void
@@ -126,30 +130,49 @@ export function useEffect(fn: () => void): Effect {
   }
 }
 
+export function scheduledEffect(
+  fn: () => void,
+  scheduler: (run: () => void) => void,
+): ScheduledEffect {
+  let runner!: ReactiveEffectRunner
+  const job = () => scheduler(runner)
+
+  runner = effect(fn, { scheduler: () => schedule(job) })
+
+  return {
+    run: runner,
+    pause: runner.effect.pause,
+    resume: runner.effect.resume,
+    stop: runner.effect.stop,
+  }
+}
+
+export function trackEffectDeps(
+  deps: Signal<unknown> | Signal<unknown>[] | (() => unknown),
+): void {
+  if (isSignal(deps)) {
+    deps.value
+    return
+  }
+
+  if (Array.isArray(deps)) {
+    for (const dep of deps.flat(Infinity)) {
+      if (isSignal(dep)) {
+        dep.value
+      }
+    }
+
+    return
+  }
+
+  deps()
+}
+
 export function useUpdateEffect(
   fn: () => void,
   deps: Signal<unknown> | Signal<unknown>[] | (() => unknown),
 ): Effect {
-  const trackDeps = () => {
-    if (isSignal(deps)) {
-      Reflect.get(deps, "value")
-      return
-    }
-
-    if (Array.isArray(deps)) {
-      for (const dep of deps.flat(Infinity)) {
-        if (isSignal(dep)) {
-          Reflect.get(dep, "value")
-        }
-      }
-
-      return
-    }
-
-    deps()
-  }
-
-  const e = effect(trackDeps, {
+  const e = effect(() => trackEffectDeps(deps), {
     scheduler: () => schedule(fn),
   })
 
