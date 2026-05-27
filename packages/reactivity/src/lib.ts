@@ -4,6 +4,7 @@ export {
   isInsideScope,
   isSignal,
   isWritableSignal,
+  onEffectCleanup,
   scheduledEffect,
   signal,
   trackEffectDeps,
@@ -11,6 +12,7 @@ export {
   useEffect,
   useUpdateEffect,
   type Effect,
+  type EffectCleanup,
   type ScheduledEffect,
   type Signal,
   type WritableSignal

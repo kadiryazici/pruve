@@ -1,6 +1,8 @@
 import {
   effect,
   getCurrentScope,
+  pauseTracking,
+  resetTracking,
   triggerRef,
   computed as vueComputed,
   shallowRef as vueSignal,
@@ -85,10 +87,13 @@ export type ScheduledEffect = Effect & {
   run: () => void
 }
 
+export type EffectCleanup = () => void
+
 type EffectJob = () => void
 
 let batchDepth = 0
 let scheduledJobs: Set<EffectJob> | undefined
+let currentEffectCleanupRegistrar: ((cleanup: EffectCleanup) => void) | undefined
 
 function schedule(job: EffectJob) {
   if (batchDepth > 0) {
@@ -119,31 +124,92 @@ export function batch<T>(fn: () => T): T {
   }
 }
 
+export function onEffectCleanup(cleanup: EffectCleanup): void {
+  if (currentEffectCleanupRegistrar == null) {
+    console.warn("onEffectCleanup() must be called while a Pruve effect callback is running.")
+    return
+  }
+
+  currentEffectCleanupRegistrar(cleanup)
+}
+
+function createEffectCallback(
+  fn: () => void,
+  afterRunUntracked?: () => void,
+) {
+  let cleanups: EffectCleanup[] = []
+
+  const cleanup = () => {
+    const pendingCleanups = cleanups
+    cleanups = []
+
+    for (const pendingCleanup of pendingCleanups) {
+      pendingCleanup()
+    }
+  }
+
+  const run = () => {
+    cleanup()
+
+    const previousRegistrar = currentEffectCleanupRegistrar
+    currentEffectCleanupRegistrar = (registeredCleanup) => {
+      cleanups.push(registeredCleanup)
+    }
+
+    try {
+      fn()
+
+      if (afterRunUntracked != null) {
+        pauseTracking()
+
+        try {
+          afterRunUntracked()
+        } finally {
+          resetTracking()
+        }
+      }
+    } finally {
+      currentEffectCleanupRegistrar = previousRegistrar
+    }
+  }
+
+  return { cleanup, run }
+}
+
 export function useEffect(fn: () => void): Effect {
+  const callback = createEffectCallback(fn)
   let runner!: ReactiveEffectRunner
-  runner = effect(fn, { scheduler: () => schedule(runner) })
+  runner = effect(callback.run, {
+    scheduler: () => schedule(runner),
+    onStop: callback.cleanup,
+  })
 
   return {
-    pause: runner.effect.pause,
-    resume: runner.effect.resume,
-    stop: runner.effect.stop,
+    pause: () => runner.effect.pause(),
+    resume: () => runner.effect.resume(),
+    stop: () => runner.effect.stop(),
   }
 }
 
 export function scheduledEffect(
   fn: () => void,
   scheduler: (run: () => void) => void,
+  afterRunUntracked?: () => void,
 ): ScheduledEffect {
+  const callback = createEffectCallback(fn, afterRunUntracked)
   let runner!: ReactiveEffectRunner
   const job = () => scheduler(runner)
 
-  runner = effect(fn, { scheduler: () => schedule(job) })
+  runner = effect(callback.run, {
+    scheduler: () => schedule(job),
+    onStop: callback.cleanup,
+  })
 
   return {
     run: runner,
-    pause: runner.effect.pause,
-    resume: runner.effect.resume,
-    stop: runner.effect.stop,
+    pause: () => runner.effect.pause(),
+    resume: () => runner.effect.resume(),
+    stop: () => runner.effect.stop(),
   }
 }
 
@@ -172,14 +238,16 @@ export function useUpdateEffect(
   fn: () => void,
   deps: Signal<unknown> | Signal<unknown>[] | (() => unknown),
 ): Effect {
+  const callback = createEffectCallback(fn)
   const e = effect(() => trackEffectDeps(deps), {
-    scheduler: () => schedule(fn),
+    scheduler: () => schedule(callback.run),
+    onStop: callback.cleanup,
   })
 
   return {
-    pause: e.effect.pause,
-    resume: e.effect.resume,
-    stop: e.effect.stop,
+    pause: () => e.effect.pause(),
+    resume: () => e.effect.resume(),
+    stop: () => e.effect.stop(),
   }
 }
 

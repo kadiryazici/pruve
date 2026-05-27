@@ -1,10 +1,10 @@
-import { scheduledEffect, trackEffectDeps, type ScheduledEffect, type Signal } from "@pruve/reactivity"
+import { onScopeDispose, scheduledEffect, trackEffectDeps, type ScheduledEffect, type Signal } from "@pruve/reactivity"
 
 export type ComponentInstance = {
   mountHooks: Set<() => void>
   unmountHooks: Set<() => void>
   layoutUpdateHooks: Set<() => void>
-  updateHooks: Set<() => void>
+  preUpdateHooks: Set<() => void>
 }
 
 let currentComponentInstance: ComponentInstance | null = null
@@ -33,21 +33,32 @@ export function onUnmount(fn: () => void) {
   }
 }
 
-export function onLayoutUpdate(fn: () => void) {
+export function useLayoutUpdate(fn: () => void) {
   const instance = getCurrentComponentInstance()
-  instance?.layoutUpdateHooks.add(fn)
+  let isFirstLayoutCommit = true
+
+  const hook = () => {
+    if (isFirstLayoutCommit) {
+      isFirstLayoutCommit = false
+      return
+    }
+
+    fn()
+  }
+
+  instance?.layoutUpdateHooks.add(hook)
 
   return () => {
-    instance?.layoutUpdateHooks.delete(fn)
+    instance?.layoutUpdateHooks.delete(hook)
   }
 }
 
-export function onUpdate(fn: () => void) {
+export function usePreUpdate(fn: () => void) {
   const instance = getCurrentComponentInstance()
-  instance?.updateHooks.add(fn)
+  instance?.preUpdateHooks.add(fn)
 
   return () => {
-    instance?.updateHooks.delete(fn)
+    instance?.preUpdateHooks.delete(fn)
   }
 }
 
@@ -65,11 +76,12 @@ function createLayoutEffect(
   let isFlushing = false
   let dirty = initiallyDirty
   let flushScheduled = false
+  let active = true
 
   const flush = () => {
     flushScheduled = false
 
-    if (!dirty) {
+    if (!active || !dirty) {
       return
     }
 
@@ -78,7 +90,6 @@ function createLayoutEffect(
 
     try {
       reactiveEffect.run()
-      afterFlush?.()
     } finally {
       isFlushing = false
     }
@@ -96,6 +107,11 @@ function createLayoutEffect(
         })
       }
     },
+    () => {
+      if (isFlushing) {
+        afterFlush?.()
+      }
+    },
   )
 
   const layoutUpdateHook = () => {
@@ -104,12 +120,22 @@ function createLayoutEffect(
 
   instance.layoutUpdateHooks.add(layoutUpdateHook)
 
+  const stop = () => {
+    if (!active) {
+      return
+    }
+
+    active = false
+    dirty = false
+    instance.layoutUpdateHooks.delete(layoutUpdateHook)
+    reactiveEffect.stop()
+  }
+
+  onScopeDispose(stop)
+
   return {
     ...reactiveEffect,
-    stop: () => {
-      instance.layoutUpdateHooks.delete(layoutUpdateHook)
-      reactiveEffect.stop()
-    },
+    stop,
   }
 }
 

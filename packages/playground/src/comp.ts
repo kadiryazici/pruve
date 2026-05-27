@@ -4,13 +4,16 @@ import {
   div,
   h1,
   mount,
-  onLayoutUpdate,
+  onEffectCleanup,
   onMount,
   onUnmount,
-  onUpdate,
   p,
   signal,
+  useEffect,
   useLayoutEffect,
+  useLayoutUpdate,
+  usePreUpdate,
+  useUpdateEffect,
   useUpdateLayoutEffect
 } from "pruve"
 
@@ -54,20 +57,49 @@ const LifecycleProbe = component(() => {
     hook("onUnmount")
   })
 
-  onUpdate(() => {
-    hook("onUpdate")
+  usePreUpdate(() => {
+    hook("usePreUpdate")
   })
 
-  onLayoutUpdate(() => {
-    hook("onLayoutUpdate")
+  useLayoutUpdate(() => {
+    hook("useLayoutUpdate")
   })
+
+  useEffect(() => {
+    const value = domValue.value
+    log(`[EFFECT] useEffect | domValue=${value}`)
+
+    onEffectCleanup(() => {
+      log(`[CLEANUP] useEffect | prior domValue=${value}`)
+    })
+  })
+
+  useUpdateEffect(() => {
+    const value = effectOnlyValue.value
+    log(`[EFFECT] useUpdateEffect | effectOnlyValue=${value}`)
+
+    onEffectCleanup(() => {
+      log(`[CLEANUP] useUpdateEffect | prior effectOnlyValue=${value}`)
+    })
+  }, effectOnlyValue)
 
   useLayoutEffect(() => {
-    hook("useLayoutEffect", ` | domValue=${domValue.value}`)
+    const value = domValue.value
+    hook("useLayoutEffect", ` | domValue=${value}`)
+
+    onEffectCleanup(() => {
+      log(`[CLEANUP] useLayoutEffect | prior domValue=${value}`)
+    })
   })
 
   useUpdateLayoutEffect(() => {
-    hook("useUpdateLayoutEffect", ` | domValue=${domValue.value}, effectOnlyValue=${effectOnlyValue.value}`)
+    const dom = domValue.value
+    const effectOnly = effectOnlyValue.value
+    hook("useUpdateLayoutEffect", ` | domValue=${dom}, effectOnlyValue=${effectOnly}`)
+
+    onEffectCleanup(() => {
+      log(`[CLEANUP] useUpdateLayoutEffect | prior domValue=${dom}, effectOnlyValue=${effectOnly}`)
+    })
   }, () => {
     domValue.value
     effectOnlyValue.value

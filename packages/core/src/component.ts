@@ -4,7 +4,6 @@ import { type ComponentInstance, getCurrentComponentInstance, setCurrentComponen
 import { createVnodeProxy, resolveProxyChildren } from "./proxy.ts"
 import type { ComponentSetup, PruveComponent, PruveNode } from "./types.ts"
 
-const useForceUpdate = () => (p.useReducer((x) => (x + 1) | 0, 0)[1]) as () => void
 
 export function component<Props extends object = {}>(setup: ComponentSetup<Props>): PruveComponent<Props> {
   const component = createBridgeComponent(setup)
@@ -13,38 +12,43 @@ export function component<Props extends object = {}>(setup: ComponentSetup<Props
   return pruveComponent
 }
 
+type BridgeState<Props extends object> = {
+  reactiveProps: ShallowReactive<Props>
+  scope: EffectScope
+  renderedContent: PruveNode
+  componentInstance: ComponentInstance
+}
+
 const createBridgeComponent = <Props extends object>(setup: ComponentSetup<Props>) => function PreactPruveBridge(props: Props) {
   const forceUpdate = useForceUpdate()
-  const reactiveProps = p.useRef<ShallowReactive<Props> | null>(null)
-  const scope = p.useRef<EffectScope | null>(null)
-  const renderedContent = p.useRef<PruveNode>(null)
-  const componentInstance = p.useRef<ComponentInstance | null>(null)
 
-  if (componentInstance.current == null) {
-    componentInstance.current = {
-      mountHooks: new Set(),
-      unmountHooks: new Set(),
-      layoutUpdateHooks: new Set(),
-      updateHooks: new Set()
+  const bridge = useLazyRef<BridgeState<Props>>(() => {
+    const state: BridgeState<Props> = {
+      reactiveProps: shallowReactive(props),
+      scope: effectScope(),
+      renderedContent: null,
+      componentInstance: {
+        mountHooks: new Set(),
+        unmountHooks: new Set(),
+        layoutUpdateHooks: new Set(),
+        preUpdateHooks: new Set()
+      }
     }
 
-    scope.current = effectScope()
-
-    scope.current.run(() => {
+    state.scope.run(() => {
       const prevInstance = getCurrentComponentInstance()
 
       try {
-        setCurrentComponentInstance(componentInstance.current)
-        reactiveProps.current = shallowReactive(props)
-        const renderFn = setup(reactiveProps.current)
+        setCurrentComponentInstance(state.componentInstance)
+        const renderFn = setup(state.reactiveProps)
         let isFirstRun = true
 
         useEffect(() => {
-          renderedContent.current = resolveProxyChildren(renderFn())
+          state.renderedContent = resolveProxyChildren(renderFn())
           forceUpdate()
 
           if (!isFirstRun) {
-            componentInstance.current?.updateHooks
+            state.componentInstance.preUpdateHooks
               .forEach((hook) => void hook())
           }
 
@@ -54,37 +58,49 @@ const createBridgeComponent = <Props extends object>(setup: ComponentSetup<Props
         setCurrentComponentInstance(prevInstance)
       }
     })
-  }
+    return state
+  }).current
 
-  if (reactiveProps.current != null) {
-    batch(() => {
-      for (const key in reactiveProps.current!) {
-        if (!(key in props)) {
-          delete reactiveProps.current![key]
-        }
+  batch(() => {
+    for (const key in bridge.reactiveProps) {
+      if (!(key in props)) {
+        delete bridge.reactiveProps[key]
       }
+    }
 
-      for (const key in props) {
-        reactiveProps.current![key] = props[key]
-      }
-    })
-  }
+    for (const key in props) {
+      bridge.reactiveProps[key] = props[key]
+    }
+  })
 
   p.useEffect(() => {
-    componentInstance.current?.mountHooks
+    bridge.componentInstance.mountHooks
       .forEach((hook) => void hook())
 
     return () => {
-      scope.current?.stop()
-      componentInstance.current?.unmountHooks
+      bridge.scope.stop()
+      bridge.componentInstance.unmountHooks
         .forEach((hook) => void hook())
     }
   }, [])
 
   p.useLayoutEffect(() => {
-    componentInstance.current?.layoutUpdateHooks
+    bridge.componentInstance.layoutUpdateHooks
       .forEach((hook) => void hook())
   })
 
-  return renderedContent.current
+  return bridge.renderedContent
+}
+
+
+const useForceUpdate = () => (p.useReducer((x) => (x + 1) | 0, 0)[1]) as () => void
+
+function useLazyRef<T>(factory: () => T): p.MutableRef<T> {
+  const ref = p.useRef<T | null>(null)
+
+  if (ref.current === null) {
+    ref.current = factory()
+  }
+
+  return ref as { current: T }
 }
