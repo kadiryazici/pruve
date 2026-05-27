@@ -1,10 +1,13 @@
 import { onScopeDispose, scheduledEffect, trackEffectDeps, type ScheduledEffect, type Signal } from "@pruve/reactivity"
+import type { ProviderMap } from "./context.ts"
 
 export type ComponentInstance = {
   mountHooks: Set<() => void>
   unmountHooks: Set<() => void>
   layoutUpdateHooks: Set<() => void>
   preUpdateHooks: Set<() => void>
+  inheritedProviders: ProviderMap
+  localProviders: Map<object, unknown>
 }
 
 let currentComponentInstance: ComponentInstance | null = null

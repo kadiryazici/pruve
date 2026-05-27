@@ -1,6 +1,7 @@
 import {
   button,
   component,
+  createContext,
   div,
   h1,
   h2,
@@ -11,6 +12,7 @@ import {
   span,
   ul,
   type PruveComponent,
+  type Signal,
 } from "pruve"
 
 // ---------------------------------------------------------------------------
@@ -139,6 +141,71 @@ const KeyedList = component<ListProps>((props) => {
 })
 
 // ---------------------------------------------------------------------------
+// 7) Context — typed handles propagate ancestor values to descendants.
+//    Changing a provided signal updates consumers without replacing context.
+// ---------------------------------------------------------------------------
+const ThemeContext = createContext<Signal<string>>()
+const PrimaryLabelContext = createContext<string>()
+const SecondaryLabelContext = createContext<string>()
+
+type ContextReaderProps = { label: string }
+const ContextReader = component<ContextReaderProps>((props) => {
+  const theme = ThemeContext.inject()
+  const primaryLabel = PrimaryLabelContext.inject()
+  const secondaryLabel = SecondaryLabelContext.inject()
+
+  return () => {
+    console.log("[RENDER] ContextReader", props.label, theme?.value)
+
+    return p().children(
+      `${props.label}: theme=${theme?.value ?? "undefined"}, primary=${primaryLabel ?? "undefined"}, secondary=${secondaryLabel ?? "undefined"}`,
+    )
+  }
+})
+
+const NestedContextProvider = component(() => {
+  const inheritedTheme = ThemeContext.inject()
+  const nestedTheme = signal("nested")
+
+  ThemeContext.provide(nestedTheme)
+
+  return () => {
+    return div()
+      .style("border-left:3px solid #7c3aed;padding-left:10px;margin-top:8px")
+      .children([
+        p().children(`Nested provider itself injects parent theme: ${inheritedTheme?.value ?? "undefined"}`),
+        button()
+          .onClick(() => nestedTheme.set(nestedTheme.value === "nested" ? "nested-updated" : "nested"))
+          .children("toggle nested provided signal"),
+        ContextReader().label("nested descendant override"),
+      ])
+  }
+})
+
+const ContextProviderProbe = component(() => {
+  const theme = signal("light")
+  const selfTheme = ThemeContext.inject()
+
+  ThemeContext.provide(theme)
+  PrimaryLabelContext.provide("replaced value")
+  PrimaryLabelContext.provide("primary value")
+  SecondaryLabelContext.provide("secondary value")
+
+  return () => {
+    return div()
+      .style("border:1px solid #7c3aed;padding:12px;margin:8px 0")
+      .children([
+        p().children(`Provider itself injects ancestor only: ${selfTheme?.value ?? "undefined"}`),
+        button()
+          .onClick(() => theme.set(theme.value === "light" ? "dark" : "light"))
+          .children("toggle outer provided signal"),
+        ContextReader().label("outer descendant"),
+        NestedContextProvider(),
+      ])
+  }
+})
+
+// ---------------------------------------------------------------------------
 // App
 // ---------------------------------------------------------------------------
 const App = component(() => {
@@ -146,6 +213,7 @@ const App = component(() => {
   const read = signal(0)
   const ignored = signal(0)
   const showToggleable = signal(true)
+  const showContextProbe = signal(true)
   const variant = signal<"a" | "b">("a")
   const items = signal([
     { id: 1, text: "apple" },
@@ -236,6 +304,18 @@ const App = component(() => {
         button()
           .onClick(() => items.set(items.value.slice().reverse()))
           .children("reverse"),
+
+        h2().children("7) Typed provide / inject context"),
+        p().children(
+          "Consumers capture their nearest provider during setup. Reactive provided signals update live; moving across provider boundaries requires remount.",
+        ),
+        button()
+          .onClick(() => showContextProbe.set(!showContextProbe.value))
+          .children(showContextProbe.value ? "unmount context provider" : "remount context provider"),
+        showContextProbe.value
+          ? ContextProviderProbe()
+          : p().children("Provider unmounted; remount to create fresh provided signals."),
+        ContextReader().label("sibling outside provider"),
       ])
   }
 })

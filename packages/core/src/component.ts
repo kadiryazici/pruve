@@ -1,5 +1,7 @@
 import { batch, effectScope, type EffectScope, shallowReactive, type ShallowReactive, useEffect } from "@pruve/reactivity"
+import { h } from "preact"
 import * as p from "preact/hooks"
+import { ProviderContext, type ProviderMap } from "./context.ts"
 import { type ComponentInstance, getCurrentComponentInstance, setCurrentComponentInstance } from "./instance.ts"
 import { createVnodeProxy, resolveProxyChildren } from "./proxy.ts"
 import type { ComponentSetup, PruveComponent, PruveNode } from "./types.ts"
@@ -17,10 +19,12 @@ type BridgeState<Props extends object> = {
   scope: EffectScope
   renderedContent: PruveNode
   componentInstance: ComponentInstance
+  providedContext: ProviderMap | null
 }
 
 const createBridgeComponent = <Props extends object>(setup: ComponentSetup<Props>) => function PreactPruveBridge(props: Props) {
   const forceUpdate = useForceUpdate()
+  const inheritedProviders = p.useContext(ProviderContext)
 
   const bridge = useLazyRef<BridgeState<Props>>(() => {
     const state: BridgeState<Props> = {
@@ -31,8 +35,11 @@ const createBridgeComponent = <Props extends object>(setup: ComponentSetup<Props
         mountHooks: new Set(),
         unmountHooks: new Set(),
         layoutUpdateHooks: new Set(),
-        preUpdateHooks: new Set()
-      }
+        preUpdateHooks: new Set(),
+        inheritedProviders,
+        localProviders: new Map()
+      },
+      providedContext: null
     }
 
     state.scope.run(() => {
@@ -58,6 +65,14 @@ const createBridgeComponent = <Props extends object>(setup: ComponentSetup<Props
         setCurrentComponentInstance(prevInstance)
       }
     })
+
+    if (state.componentInstance.localProviders.size > 0) {
+      state.providedContext = new Map([
+        ...state.componentInstance.inheritedProviders,
+        ...state.componentInstance.localProviders
+      ])
+    }
+
     return state
   }).current
 
@@ -88,6 +103,13 @@ const createBridgeComponent = <Props extends object>(setup: ComponentSetup<Props
     bridge.componentInstance.layoutUpdateHooks
       .forEach((hook) => void hook())
   })
+
+  if (bridge.providedContext != null) {
+    return h(ProviderContext.Provider, {
+      value: bridge.providedContext,
+      children: bridge.renderedContent
+    })
+  }
 
   return bridge.renderedContent
 }
