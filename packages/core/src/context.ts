@@ -13,6 +13,8 @@ export type PruveContext<T> = {
   inject(): T | undefined
 }
 
+export type PruveContextType<T> = T extends PruveContext<infer U> ? U : never
+
 export function createContext<T>(): PruveContext<T> {
   const key: ContextKey = {}
 
