@@ -32,7 +32,6 @@ const createBridgeComponent = <Props extends object>(setup: ComponentSetup<Props
       renderedContent: null,
       componentInstance: {
         mountHooks: new Set(),
-        unmountHooks: new Set(),
         layoutUpdateHooks: new Set(),
         preUpdateHooks: new Set(),
         inheritedProviders,
@@ -51,11 +50,11 @@ const createBridgeComponent = <Props extends object>(setup: ComponentSetup<Props
 
         useEffect(() => {
           state.renderedContent = resolveProxyChildren(renderFn())
-          forceUpdate()
 
           if (!isFirstRun) {
             state.componentInstance.preUpdateHooks
               .forEach((hook) => void hook())
+            forceUpdate()
           }
 
           isFirstRun = false
@@ -87,15 +86,13 @@ const createBridgeComponent = <Props extends object>(setup: ComponentSetup<Props
     }
   })
 
-  p.useEffect(() => {
+  p.useLayoutEffect(() => {
     bridge.componentInstance.mountHooks
       .forEach((hook) => void hook())
   }, [])
 
   p.useEffect(() => () => {
     bridge.scope.stop()
-    bridge.componentInstance.unmountHooks
-      .forEach((hook) => void hook())
   }, [])
 
   p.useLayoutEffect(() => {
