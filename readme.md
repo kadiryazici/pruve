@@ -1,6 +1,6 @@
 # Pruve (WIP)
 
-Pruve is an TypeScript UI framework built on Preact rendering and
+Pruve is a TypeScript UI framework built on Preact rendering and
 Vue-powered fine-grained reactivity. It combines:
 
 - Fluent, SwiftUI-like element builders.
@@ -9,6 +9,12 @@ Vue-powered fine-grained reactivity. It combines:
 - Lifecycle hooks, provide/inject context, and async loader boundaries.
 
 This repository is under active development. The public API is still evolving.
+
+## Install
+
+```sh
+npm install pruvejs
+```
 
 ## Example
 
@@ -155,6 +161,154 @@ Available reactivity APIs include:
 - `useEffect()` and `useUpdateEffect()`
 - `pickProps()` for reactive prop selection and defaults
 
+## Effects
+
+Use `useEffect()` when the effect should run immediately and automatically
+track the reactive values it reads:
+
+```ts
+import { component, onEffectCleanup, signal, useEffect } from "pruvejs"
+
+const SearchController = component(() => {
+  const query = signal("")
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    fetch(`/api/search?q=${query.value}`, {
+      signal: controller.signal,
+    })
+
+    onEffectCleanup(() => {
+      controller.abort()
+    })
+  })
+
+  return () => null
+})
+```
+
+`useEffect()` reruns whenever `query.value` changes. Its cleanup runs before
+the next effect execution and when the component scope is disposed.
+
+Use `useUpdateEffect()` when an effect should skip initial execution and run
+only after selected dependencies update:
+
+```ts
+import { component, signal, useUpdateEffect } from "pruvejs"
+
+const Pagination = component(() => {
+  const page = signal(1)
+  const sort = signal("popular")
+
+  useUpdateEffect(
+    () => {
+      console.log("page changed:", page.value)
+    },
+    page,
+  )
+
+  useUpdateEffect(
+    () => {
+      console.log("page or sort changed:", page.value, sort.value)
+    },
+    [page, sort],
+  )
+
+  return () => null
+})
+```
+
+The `deps` argument of `useUpdateEffect(fn, deps)` accepts:
+
+- A signal: `useUpdateEffect(fn, count)`
+- An array of signals: `useUpdateEffect(fn, [first, second])`
+- A tracker function that reads reactive values: `useUpdateEffect(fn, () => state.value)`
+- A tracker function that reads multiple values: `useUpdateEffect(fn, () => [state.value, other.value])`
+
+Tracker functions are useful for reactive component props:
+
+```ts
+type ProductProps = {
+  value: string
+  otherValue: number
+}
+
+const Product = component((props: ProductProps) => {
+  useUpdateEffect(
+    () => {
+      console.log("value changed:", props.value)
+    },
+    () => props.value,
+  )
+
+  useUpdateEffect(
+    () => {
+      console.log("product inputs changed:", props.value, props.otherValue)
+    },
+    () => [props.value, props.otherValue],
+  )
+
+  return () => null
+})
+```
+
+The tracker function establishes dependencies by reading reactive values; its
+returned value is only a convenient way to express those reads.
+
+## Props And Defaults
+
+Component props are shallow-reactive. Read the props that a component owns
+instead of broadly forwarding every incoming value.
+
+Use `pickProps()` during setup to explicitly select props as signals and provide defaults:
+
+```ts
+import { component, pickProps } from "pruvejs"
+import { button } from "pruvejs/builtin"
+
+type ActionButtonProps = {
+  label?: string
+  disabled?: boolean
+}
+
+const ActionButton = component((props: ActionButtonProps) => {
+  const { label, disabled } = pickProps(props)
+    .label("Continue")
+    .disabled() // No default given, only picked
+    .pick()
+
+  return () => (
+    button()
+      .disabled(disabled.value)
+      .children(label.value)
+  )
+})
+```
+
+### Accessing rest of props:
+
+Use `.pickRest()` to access the rest of the props as a reactive object. This is useful for forwarding props to a child component or native element without
+explicitly picking each one.
+
+```ts
+const MyButton = component((props: ComponentProps<"button">) => {
+  const { className, rest } = pickProps(props)
+    .className()
+    .pickRest()
+
+  useEffect(() => {
+    console.log("Disabled:", rest.disabled)
+  })
+
+  return () => (
+    button()
+      .with(rest)
+      .className(`${className.value} my-btn`)
+  )
+})
+```
+
 ## Context
 
 `createContext()` creates a typed provide/inject handle. A provider applies to
@@ -186,6 +340,74 @@ const App = component(() => {
 
 Nested providers override their ancestors for descendants. Separate mounted
 Pruve applications keep separate provider trees.
+
+
+## Lifecycles And Layout Effects
+
+Hooks are called during `component()` setup.
+
+```ts
+import {
+  component,
+  signal,
+  useLayoutEffect,
+  useLayoutUpdate,
+  useMount,
+  usePreUpdate,
+  useUnmount,
+  useUpdateLayoutEffect,
+} from "pruvejs"
+import { button } from "pruvejs/builtin"
+
+const LifecycleProbe = component(() => {
+  const count = signal(0)
+
+  useMount(() => {
+    console.log("mounted with committed DOM")
+  })
+
+  useUnmount(() => {
+    console.log("component scope disposed")
+  })
+
+  usePreUpdate(() => {
+    console.log("before DOM update")
+  })
+
+  useLayoutUpdate(() => {
+    console.log("after an updated DOM commit")
+  })
+
+  useLayoutEffect(() => {
+    console.log("layout effect count:", count.value)
+  })
+
+  useUpdateLayoutEffect(
+    () => {
+      console.log("count commit:", count.value)
+    },
+    count,
+  )
+
+  return () => (
+    button()
+      .onClick(() => count.set(count.value + 1))
+      .children(`Count: ${count.value}`)
+  )
+})
+```
+
+| API | Purpose |
+| --- | --- |
+| `useMount(fn)` | Runs when the mounted DOM is committed |
+| `useUnmount(fn)` | Runs when the component scope is disposed |
+| `usePreUpdate(fn)` | Runs before a reactive component DOM update |
+| `useLayoutUpdate(fn)` | Runs after DOM updates, excluding the first layout commit |
+| `useLayoutEffect(fn)` | Tracks reactive reads and runs after layout is available |
+| `useUpdateLayoutEffect(fn, deps)` | Runs after layout when selected dependencies update |
+
+Use regular effects for reactive work that does not need committed DOM. Use
+layout effects when a callback needs to observe or measure rendered DOM.
 
 ## Loaders
 
@@ -250,18 +472,6 @@ Products()
   .category(category.value)
 ```
 
-## Lifecycles And Effects
-
-Hooks are called during `component()` setup.
-
-| API | Purpose |
-| --- | --- |
-| `onMount(fn)` | Runs when the mounted DOM is committed |
-| `onUnmount(fn)` | Runs when the component scope is disposed |
-| `usePreUpdate(fn)` | Runs before a reactive component DOM update |
-| `useLayoutUpdate(fn)` | Runs after DOM updates, excluding the first layout commit |
-| `useLayoutEffect(fn)` | Tracks reactive reads and runs after layout is available |
-| `useUpdateLayoutEffect(fn, deps)` | Runs after layout when selected dependencies update |
 
 ## Project Status
 
