@@ -7,6 +7,7 @@ export {
   type LoaderCallback,
   type LoaderProps
 } from "./loader.ts"
+export { lazy, type LazyModule } from "./lazy.ts"
 export { createVnodeProxy, isVnodeProxy, resolveProxyChildren } from "./proxy.ts"
 export { mount } from "./render.ts"
 export type {

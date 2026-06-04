@@ -1,9 +1,25 @@
 import { render } from "preact"
+import { AppContext } from "./AppContext.ts"
+import { component } from "./component.ts"
 import type { PruveComponent } from "./types.ts"
 
-export function mount(component: PruveComponent, container: Element) {
-  if (component.__isPruveComponent) {
-    render(component().make(), container)
+export function mount(App: PruveComponent, container: Element) {
+  const Root = component(() => {
+    AppContext.provide({
+      isServer: typeof document === "undefined",
+      isDev: true, // TODO
+      version: "unknown",
+      asyncBoundary: {
+        promises: [],
+        isSettled: () => Promise.resolve(),
+      },
+    })
+
+    return () => App().make()
+  })
+
+  if (App.__isPruveComponent) {
+    render(Root().make(), container)
     return
   }
 

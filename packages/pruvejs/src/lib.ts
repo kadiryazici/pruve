@@ -1,6 +1,7 @@
 export {
-  component, createContext, createLoader, createVnodeProxy, isPruveComponent, isVnodeProxy, mount, resolveProxyChildren, useLayoutEffect, useLayoutUpdate, useMount, usePreUpdate, useUnmount, useUpdateLayoutEffect, view,
+  component, createContext, createLoader, createVnodeProxy, isPruveComponent, isVnodeProxy, lazy, mount, resolveProxyChildren, useLayoutEffect, useLayoutUpdate, useMount, usePreUpdate, useUnmount, useUpdateLayoutEffect, view,
   type ComponentSetup,
+  type LazyModule,
   type Loader,
   type LoaderCallback,
   type LoaderProps,

@@ -521,6 +521,27 @@ const ProductsLoader = createLoader<ProductsProps, Product[]>(
 )
 ```
 
+## Lazy Components
+
+Use `lazy()` to load a component module with dynamic import while keeping the
+same builder API as a normal component:
+
+
+```ts
+import { lazy } from "pruvejs"
+
+// If the component is a default export:
+const ProductPanel = lazy(() => import("./ProductPanel.ts"))
+// If the component is a named export:
+const ProductPanel = lazy(() => import("./ProductPanel.ts").then(m => m.ProductPanel))
+
+ProductPanel()
+  .id(5)
+```
+
+The imported module may export the component as `default`, or the load
+function may resolve directly to a `PruveComponent`.
+
 
 ## Project Status
 
@@ -533,6 +554,7 @@ Implemented today:
 - Lifecycle and layout-effect APIs.
 - Typed provide/inject context.
 - Single-load async boundaries with abort support.
+- Lazy component loading with the normal builder API.
 
 Still expected to evolve:
 
@@ -559,5 +581,5 @@ pnpm install
 pnpm --filter @pruve/playground dev
 ```
 
-The currently mounted playground example is the loader demo in
-`packages/playground/src/async.ts`.
+The currently mounted playground example is the lazy component demo in
+`packages/playground/src/lazy.ts`.
