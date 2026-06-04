@@ -412,12 +412,12 @@ layout effects when a callback needs to observe or measure rendered DOM.
 ## Loaders
 
 Loaders are explicit async boundaries. A loader renders pending or error
-content until its request resolves, then mounts a normal Pruve component.
-Loader callbacks receive an `AbortSignal` that is aborted when their boundary
-is unmounted.
+content until its request resolves, then renders the resolved view. Loader
+callbacks receive an `AbortSignal` that is aborted when their boundary is
+unmounted.
 
 ```ts
-import { createLoader, useLoaderData, view } from "pruvejs"
+import { component, createLoader, view } from "pruvejs"
 import { div, p } from "pruvejs/builtin"
 
 type ProductsProps = {
@@ -429,28 +429,21 @@ type Product = {
   name: string
 }
 
-const ProductsLoader = createLoader<Product[], ProductsProps>({
-  loader: async (props, signal) => {
-    const response = await fetch(`/api/products?category=${props.category}`, {
-      signal
-    })
+const ProductsLoader = createLoader(async (props: ProductsProps, signal) => {
+  const response = await fetch(`/api/products?category=${props.category}`, {
+    signal
+  })
 
-    return response.json()
-  },
-
-  pendingView: view<ProductsProps>((props) => (
-    p()
-      .children(`Loading ${props.category}...`)
-  )),
-
-  errorView: (error) => (
-    p()
-      .children(error instanceof Error ? error.message : "Failed to load")
-  )
+  return response.json() as Promise<Product[]>
 })
 
-const Products = ProductsLoader.component(() => {
-  const products = useLoaderData(ProductsLoader)
+const PendingProducts = view<ProductsProps>((props) => (
+  p()
+    .children(`Loading ${props.category}...`)
+))
+
+const ProductList = component(() => {
+  const products = ProductsLoader.inject()
 
   return () => (
     div()
@@ -463,13 +456,69 @@ const Products = ProductsLoader.component(() => {
 })
 ```
 
+Use loaders like components. Provide request props, pending/error views, and
+the resolved render callback through the builder:
+
+```ts
+ProductsLoader()
+  .category(category.value)
+  .pending(PendingProducts().category(category.value))
+  .catch((error) => (
+    p()
+      .children(error instanceof Error ? error.message : "Failed to load")
+  ))
+  .render(() => ProductList())
+```
+
+The resolved data is passed to `.render(data => ...)` and is also available
+to descendant component setup through `ProductsLoader.inject()`.
+
+```ts
+ProductsLoader()
+  .category(category.value)
+  .pending(PendingProducts().category(category.value))
+  .catch((error) => (
+    p()
+      .children(error instanceof Error ? error.message : "Failed to load")
+  ))
+  .render((products) => (
+    div()
+      .children(products.map((product) => (
+        p()
+          .key(product.id)
+          .children(product.name)
+      )))
+  ))
+```
+
 A loader loads once per mounted boundary. To request new data, render a new
 keyed instance:
 
 ```ts
-Products()
+ProductsLoader()
   .key(category.value)
   .category(category.value)
+  .pending(PendingProducts().category(category.value))
+  .catch((error) => (
+    p()
+      .children(error instanceof Error ? error.message : "Failed to load")
+  ))
+  .render(() => ProductList())
+```
+
+If you prefer to provide props as a type argument, pass the loaded data type
+as the second argument:
+
+```ts
+const ProductsLoader = createLoader<ProductsProps, Product[]>(
+  async (props, signal) => {
+    const response = await fetch(`/api/products?category=${props.category}`, {
+      signal
+    })
+
+    return response.json()
+  }
+)
 ```
 
 

@@ -2,13 +2,13 @@ import {
   component,
   mount,
   onEffectCleanup,
-  onMount,
-  onUnmount,
   signal,
   useEffect,
   useLayoutEffect,
   useLayoutUpdate,
+  useMount,
   usePreUpdate,
+  useUnmount,
   useUpdateEffect,
   useUpdateLayoutEffect
 } from "pruvejs"
@@ -51,12 +51,12 @@ const LifecycleProbe = component(() => {
     log(`[HOOK] ${name}${values} | observed DOM: ${readProbeDom()}`)
   }
 
-  onMount(() => {
-    hook("onMount")
+  useMount(() => {
+    hook("useMount")
   })
 
-  onUnmount(() => {
-    hook("onUnmount")
+  useUnmount(() => {
+    hook("useUnmount")
   })
 
   usePreUpdate(() => {
@@ -150,7 +150,7 @@ async function runSuite(): Promise<void> {
   log("BEGIN automated lifecycle suite")
   log("Each action waits briefly to simulate separate human clicks.")
 
-  await click("toggle-probe", "unmount existing probe and collect onUnmount")
+  await click("toggle-probe", "unmount existing probe and collect useUnmount")
   await click("toggle-probe", "mount a fresh probe")
   await click("probe-update-dom", "update rendered dependency from 0 to 1")
   await click("probe-update-dom", "update rendered dependency from 1 to 2")
@@ -170,8 +170,10 @@ const App = component(() => {
     return div()
       .style("font-family:system-ui;max-width:820px;margin:24px auto;display:flex;flex-direction:column;gap:14px")
       .children([
-        h1().children("Pruve lifecycle visual test suite"),
-        p().children("Open DevTools Console, click Run automated suite once, then send the resulting [TEST] lines."),
+        h1()
+          .children("Pruve lifecycle visual test suite"),
+        p()
+          .children("Open DevTools Console, click Run automated suite once, then send the resulting [TEST] lines."),
         div()
           .style("display:flex;gap:8px;flex-wrap:wrap")
           .children([

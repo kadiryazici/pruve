@@ -6,7 +6,7 @@ import {
   computed,
   createContext,
   mount,
-  onMount,
+  useMount,
   pickProps,
   signal,
   type WritableSignal,
@@ -185,7 +185,7 @@ type MetricProps = {
 const Metric = component<MetricProps>((props) => {
   const el = signal<HTMLDivElement | null>(null)
 
-  onMount(() => {
+  useMount(() => {
     console.log("Metric mounted with el:", el.value)
   })
 
@@ -559,6 +559,9 @@ const DiscoverRoute = component((props: DiscoverRouteProps) => {
 
 const SavedRoute = component(() => {
   const { saved, cart } = AppContext.inject()!
+  
+
+
 
   const category = signal<Category>("All")
   const query = signal("")
@@ -657,6 +660,8 @@ const App = component(() => {
     saved: SavedRoute,
     cart: CartRoute,
   }
+
+
 
   return () => (
     div()

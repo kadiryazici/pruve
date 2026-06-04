@@ -1,12 +1,14 @@
 export {
-  component, createContext, createLoader, createVnodeProxy, isPruveComponent, isVnodeProxy, mount, resolveProxyChildren, useLayoutEffect, useLayoutUpdate, useLoaderData, useMount, usePreUpdate, useUnmount, useUpdateLayoutEffect, view,
+  component, createContext, createLoader, createVnodeProxy, isPruveComponent, isVnodeProxy, mount, resolveProxyChildren, useLayoutEffect, useLayoutUpdate, useMount, usePreUpdate, useUnmount, useUpdateLayoutEffect, view,
   type ComponentSetup,
   type Loader,
-  type LoaderOptions,
+  type LoaderCallback,
+  type LoaderProps,
   type PropsWithChildren,
   type PruveChildren,
   type PruveComponent, type PruveContext,
   type PruveContextType, type PruveNode, type RenderableProxy, type TextNode,
+  type VirtualNodeBuilderProxy,
   type VirtualNodeProxy
 } from "@pruve/core"
 
@@ -24,4 +26,3 @@ export {
   type ShallowReactive, type Signal,
   type WritableSignal
 } from "@pruve/reactivity"
-

@@ -15,8 +15,8 @@ export type Signal<T> = {
   readonly value: T
 }
 
-export type WritableSignal<T> = Signal<T> & {
-  set: (value: T) => void
+export type WritableSignal<T, S = T> = Signal<T> & {
+  set: (value: S) => void
   asReadonly(): Signal<T>
 }
 

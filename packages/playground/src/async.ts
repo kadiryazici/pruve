@@ -7,7 +7,6 @@ import {
   createLoader,
   mount,
   signal,
-  useLoaderData,
   view,
 } from "pruvejs"
 import {
@@ -95,45 +94,43 @@ function wait(duration: number, signal: AbortSignal): Promise<void> {
   })
 }
 
-const ProductsLoader = createLoader<Product[], ProductsProps>({
-  loader: async (props, signal) => {
-    console.log("[LOADER] start", props.request, props.loadId)
-    await wait(800, signal)
+const ProductsLoader = createLoader<ProductsProps, Product[]>(async (props, signal) => {
+  console.log("[LOADER] start", props.request, props.loadId)
+  await wait(800, signal)
 
-    if (props.request === "error") {
-      throw new Error("The catalog endpoint rejected this request.")
-    }
+  if (props.request === "error") {
+    throw new Error("The catalog endpoint rejected this request.")
+  }
 
-    console.log("[LOADER] resolved", props.request, props.loadId)
-    return catalogs[props.request]
-  },
-
-  pendingView: view<ProductsProps>((props) => (
-    div()
-      .className(cn("rounded-2xl border border-indigo-100 bg-indigo-50 p-6"))
-      .children([
-        p()
-          .className(cn("text-sm font-medium text-indigo-700"))
-          .children(`Loading "${props.request}" request #${props.loadId}...`),
-        p()
-          .className(cn("mt-2 text-sm text-slate-500"))
-          .children("Pending UI is rendered by the loader boundary.")
-      ])
-  )),
-
-  errorView: (error, props) => (
-    div()
-      .className(cn("rounded-2xl border border-rose-200 bg-rose-50 p-6"))
-      .children([
-        p()
-          .className(cn("text-sm font-semibold text-rose-700"))
-          .children(`Request #${props.loadId} failed`),
-        p()
-          .className(cn("mt-2 text-sm text-rose-600"))
-          .children(error instanceof Error ? error.message : String(error))
-      ])
-  ),
+  console.log("[LOADER] resolved", props.request, props.loadId)
+  return catalogs[props.request]
 })
+
+const ProductsPending = view<ProductsProps>((props) => (
+  div()
+    .className(cn("rounded-2xl border border-indigo-100 bg-indigo-50 p-6"))
+    .children([
+      p()
+        .className(cn("text-sm font-medium text-indigo-700"))
+        .children(`Loading "${props.request}" request #${props.loadId}...`),
+      p()
+        .className(cn("mt-2 text-sm text-slate-500"))
+        .children("Pending UI is rendered by the loader boundary.")
+    ])
+))
+
+const ProductsError = (error: unknown, loadId: number) => (
+  div()
+    .className(cn("rounded-2xl border border-rose-200 bg-rose-50 p-6"))
+    .children([
+      p()
+        .className(cn("text-sm font-semibold text-rose-700"))
+        .children(`Request #${loadId} failed`),
+      p()
+        .className(cn("mt-2 text-sm text-rose-600"))
+        .children(error instanceof Error ? error.message : String(error))
+    ])
+)
 
 const ProductCard = component<{ product: Product }>((props) => {
   return () => (
@@ -153,8 +150,8 @@ const ProductCard = component<{ product: Product }>((props) => {
   )
 })
 
-const Products = ProductsLoader.component((props) => {
-  const products = useLoaderData(ProductsLoader)
+const Products = component<ProductsProps>((props) => {
+  const products = ProductsLoader.inject()
 
   console.log("[SETUP] Products", props.request, props.loadId, products)
 
@@ -207,7 +204,7 @@ const App = component(() => {
               .children("Loader playground"),
             p()
               .className(cn("mt-3 max-w-2xl text-sm leading-6 text-slate-600"))
-              .children("Each button mounts a fresh single-load boundary with request props. The loaded component reads its result with useLoaderData()."),
+              .children("Each button mounts a fresh single-load boundary with request props. The loaded component reads its result with ProductsLoader.inject()."),
             div()
               .className(cn("mt-7 flex flex-wrap gap-3"))
               .children([
@@ -227,10 +224,21 @@ const App = component(() => {
             section()
               .className(cn("mt-8"))
               .children(
-                Products()
+                ProductsLoader()
                   .key(loadId.value)
                   .request(request.value)
                   .loadId(loadId.value)
+                  .pending(
+                    ProductsPending()
+                      .request(request.value)
+                      .loadId(loadId.value)
+                  )
+                  .catch((error) => ProductsError(error, loadId.value))
+                  .render(() => (
+                    Products()
+                      .request(request.value)
+                      .loadId(loadId.value)
+                  ))
               )
           ])
       ])
